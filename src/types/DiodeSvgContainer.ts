@@ -1,4 +1,4 @@
-import type { ElecComponentDefinition, Point } from "./ElecComponentDefinition";
+import type { ElecComponentDefinition } from "./ElecComponentDefinition";
 import svgString from "../assets/diode.svg?raw";
 import { BaseSvgComponent } from "./BaseSvgContainer";
 

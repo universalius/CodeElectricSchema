@@ -87,7 +87,7 @@ export const parseConnections = (text: string): Connection[] => {
 };
 
 const parseComponentType = (typeStr: string): ComponentType => {
-  const [name, index] = splitTextAndNumbers(typeStr);
+  const [name] = splitTextAndNumbers(typeStr);
   switch (name) {
     case "R":
       return ComponentType.R;

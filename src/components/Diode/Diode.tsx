@@ -5,10 +5,7 @@ import {
   getTranslate,
   getLabelCoords,
 } from "../../helpers/componentPositionHelpers";
-import {
-  LabelPosition,
-  type ElecComponentDefinition,
-} from "../../types/ElecComponentDefinition";
+import type { ElecComponentDefinition } from "../../types/ElecComponentDefinition";
 
 export const Diode = ({
   component,
