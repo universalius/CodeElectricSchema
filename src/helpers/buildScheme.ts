@@ -103,8 +103,8 @@ export const buildSchemeSvg = (
   });
   const svgElement = document.createElementNS(SVG_NS, "svg");
   svgElement.setAttribute("width", "1000");
-  svgElement.setAttribute("height", "300");
-  svgElement.setAttribute("viewBox", "-75 -75 500 150");
+  svgElement.setAttribute("height", "600");
+  svgElement.setAttribute("viewBox", "-75 -75 500 300");
   svgElement.setAttribute("style", "color: black; background-color: pink;");
   svgElement.setAttribute("xmlns", SVG_NS);
 

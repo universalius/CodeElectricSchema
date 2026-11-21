@@ -53,16 +53,24 @@ R1 R1;
 D1 D1;
 Vcc2 Out_5V;
 Dot1;
+Dot2;
+Dot3;
 Vcc3 5V;
+C1 C1 vert;
+Gnd1 GND;
 `;
 
   const testConnections1 = `
 Vcc1-2 > Dot1-1;
-Dot1-4 v 40 < Vcc3-2;
+Dot1-4 v 40 C1-1;
+C1-2 v 40 Dot3-2;
+Dot3-1 < Gnd1-2;
 Dot1-3 > R1-1;
 R1-2 > D1-1;
 D1-2 > Vcc2-1;
 `;
+
+  //Dot1-4 v 40 < Vcc3-2;
 
   const result = parseCode(testComponents1, testConnections1);
 
