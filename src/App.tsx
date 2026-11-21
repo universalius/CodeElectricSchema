@@ -54,14 +54,14 @@ Dot5-3 - Gnd4-1;
   console.log("Parsed Result:", result);
 
   const diode: BaseElecComponent = {
-    label: { name: "D1", position: LabelPosition.Left },
+    label: { name: "D1", position: LabelPosition.Bottom },
     id: "D1",
     type: ComponentType.D,
     orientation: Orientation.Vertical,
   };
 
   const resistor: BaseElecComponent = {
-    label: { name: "R1", position: LabelPosition.Left },
+    label: { name: "R1", position: LabelPosition.Right },
     id: "R1",
     type: ComponentType.R,
     orientation: Orientation.Vertical,
@@ -76,8 +76,8 @@ Dot5-3 - Gnd4-1;
           viewBox="-75 -75 150 150"
           style={{ color: "black", backgroundColor: "pink" }}
         >
-          {/* <Diode component={diode} /> */}
-          <Resistor component={resistor} />
+          <Diode component={diode} />
+          {/* <Resistor component={resistor} /> */}
         </svg>
       </section>
 

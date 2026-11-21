@@ -18,7 +18,12 @@ export const Resistor = ({ component }: { component: BaseElecComponent }) => {
 
   const transform = [translate, rotate].filter(Boolean).join(" ");
 
-  const labelCoords = getLabelCoords(width, height, component?.label?.position);
+  const labelCoords = getLabelCoords(
+    rotationAngle,
+    width,
+    height,
+    component?.label?.position,
+  );
 
   return (
     <g>

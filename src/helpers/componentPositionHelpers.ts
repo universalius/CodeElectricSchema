@@ -63,10 +63,19 @@ export const parseSvgString = (svgString: string): SVGSVGElement => {
 const labelHeight = 36;
 
 export const getLabelCoords = (
-  width: number,
-  height: number,
+  angle: number,
+  componentWidth: number,
+  componentHeight: number,
   labelPosition: LabelPosition,
 ): { x: number; y: number; direction?: string } => {
+  let width = componentWidth;
+  let height = componentHeight;
+
+  if (angle == 90 || angle == 270) {
+    width = componentHeight;
+    height = componentWidth;
+  }
+
   if (labelPosition === LabelPosition.Top) {
     return { x: width / 2, y: 0 };
   }
