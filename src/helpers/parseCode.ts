@@ -111,6 +111,8 @@ const parseComponentType = (typeStr: string): ComponentType => {
       return ComponentType.MCU;
     case "Pin":
       return ComponentType.Pin;
+    case "Dot":
+      return ComponentType.Dot;
     default:
       throw new Error(`Unknown component type: ${typeStr}`);
   }
@@ -125,7 +127,9 @@ const parseLabel = (labelStr: string): Label => {
 };
 
 const isConnectionOrientation = (value: string): boolean => {
-  return (value as ConnectionOrientation) !== undefined;
+  return Object.values(ConnectionOrientation).includes(
+    value as ConnectionOrientation,
+  );
 };
 
 const parseConnectionLines = (parts: string[]): ConnectionLine[] => {

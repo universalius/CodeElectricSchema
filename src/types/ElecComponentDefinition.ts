@@ -47,6 +47,7 @@ export enum ComponentType {
   LED = "LED",
   MCU = "Microcontroller",
   Pin = "Pin",
+  Dot = "Dot",
 }
 
 export type ElecComponentDefinition = {

@@ -51,11 +51,15 @@ Dot5-3 - Gnd4-1;
 Vcc1 5V; 
 R1 R1;
 D1 D1;
-Vcc2 Out_5V
+Vcc2 Out_5V;
+Dot1;
+Vcc3 5V;
 `;
 
   const testConnections1 = `
-Vcc1-2 > R1-1;
+Vcc1-2 > Dot1-1;
+Dot1-4 v 40 < Vcc3-2;
+Dot1-3 > R1-1;
 R1-2 > D1-1;
 D1-2 > Vcc2-1;
 `;
