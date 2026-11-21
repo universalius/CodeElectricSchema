@@ -1,4 +1,4 @@
-import type { ElecComponentDefinition } from "./ElecComponentDefinition";
+import type { ElecComponentDefinition, Point } from "./ElecComponentDefinition";
 import svgString from "../assets/switch.svg?raw";
 import { BaseSvgComponent } from "./BaseSvgContainer";
 
@@ -7,6 +7,10 @@ export class SwitchSvgContainer extends BaseSvgComponent {
     super(svgString, component);
   }
 
-  // The default `points` (left-middle / right-middle) match the outer edges of
-  // the two contact circles (x = 0 and x = 30), so no override is needed.
+  override get points(): Array<Point> {
+    return [
+      { x: 0, y: this.height - 2 },
+      { x: this.width, y: this.height - 2 },
+    ];
+  }
 }

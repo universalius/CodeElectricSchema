@@ -1,7 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import { parseCode } from "./helpers/parseCode";
 import { buildSchemeSvg } from "./helpers/buildScheme";
+import {
+  COMPONENTS_STORAGE_KEY,
+  CONNECTIONS_STORAGE_KEY,
+  readStored,
+  saveStored,
+} from "./helpers/storage";
 
 const INITIAL_COMPONENTS = [
   "Vcc1 5V;",
@@ -26,21 +32,35 @@ function buildSvgMarkup(componentsText: string, connectionsText: string): string
 }
 
 function App() {
-  const [componentsText, setComponentsText] = useState(INITIAL_COMPONENTS);
-  const [connectionsText, setConnectionsText] = useState(INITIAL_CONNECTIONS);
-  const [svgMarkup, setSvgMarkup] = useState<string>(() =>
-    buildSvgMarkup(INITIAL_COMPONENTS, INITIAL_CONNECTIONS),
+  const [componentsText, setComponentsText] = useState<string>(
+    () => readStored(COMPONENTS_STORAGE_KEY) ?? INITIAL_COMPONENTS,
   );
+  const [connectionsText, setConnectionsText] = useState<string>(
+    () => readStored(CONNECTIONS_STORAGE_KEY) ?? INITIAL_CONNECTIONS,
+  );
+  const [svgMarkup, setSvgMarkup] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
-  const handleOk = () => {
+  const renderScheme = (components: string, connections: string) => {
     try {
-      setSvgMarkup(buildSvgMarkup(componentsText, connectionsText));
+      setSvgMarkup(buildSvgMarkup(components, connections));
       setError(null);
     } catch (e) {
       setSvgMarkup("");
       setError(e instanceof Error ? e.message : String(e));
     }
+  };
+
+  // Render once on mount (from localStorage if present, otherwise the example).
+  useEffect(() => {
+    renderScheme(componentsText, connectionsText);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleOk = () => {
+    saveStored(COMPONENTS_STORAGE_KEY, componentsText);
+    saveStored(CONNECTIONS_STORAGE_KEY, connectionsText);
+    renderScheme(componentsText, connectionsText);
   };
 
   return (
