@@ -1,0 +1,8 @@
+{
+    "recommendations": [
+        "esbenp.prettier-vscode",
+        "rvest.vs-code-prettier-eslint",
+        "jpoissonnier.vscode-styled-components",
+        "firsttris.vscode-jest-runner"
+    ]
+}

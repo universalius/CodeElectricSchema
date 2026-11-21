@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 30" width="8" height="30">
+  <!-- European / IEC 60617 Standard Fixed Capacitor Symbol (Without Leads) -->
+  <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
+    <!-- Left Plate -->
+    <line x1="0" y1="0" x2="0" y2="30" />
+    <!-- Right Plate -->
+    <line x1="8" y1="0" x2="8" y2="30" />
+  </g>
+</svg>
