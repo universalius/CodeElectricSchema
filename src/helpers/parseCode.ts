@@ -3,11 +3,11 @@ import {
   ConnectionOrientation,
   LabelPosition,
   Orientation,
-  type BaseElecComponent,
+  type ElecComponentDefinition,
   type Connection,
   type ConnectionLine,
   type Label,
-} from "../types/BaseElecComponent";
+} from "../types/ElecComponentDefinition";
 
 /**
  * Splits a string containing text and numbers into an array of text and numeric segments.
@@ -21,7 +21,7 @@ export const parseCode = (
   definitionsText: string,
   connectionsText: string,
 ): {
-  components: BaseElecComponent[];
+  components: ElecComponentDefinition[];
   connections: Connection[];
 } => {
   const components = parseComponents(definitionsText);
@@ -29,13 +29,13 @@ export const parseCode = (
   return { components, connections };
 };
 
-export const parseComponents = (text: string): BaseElecComponent[] => {
+export const parseComponents = (text: string): ElecComponentDefinition[] => {
   const lines = text
     .split(";")
     .filter((line) => line.trim() !== "")
     .map((line) => line.trim().replace(";", ""));
 
-  const components: BaseElecComponent[] = [];
+  const components: ElecComponentDefinition[] = [];
   // console.log("Parsing component lines:", lines);
 
   for (const line of lines) {
@@ -43,7 +43,7 @@ export const parseComponents = (text: string): BaseElecComponent[] => {
     const id = idStr;
     const type = parseComponentType(idStr);
 
-    const component: BaseElecComponent = {
+    const component: ElecComponentDefinition = {
       id,
       type,
       label: labelStr ? parseLabel(labelStr) : undefined,
@@ -71,12 +71,12 @@ export const parseConnections = (text: string): Connection[] => {
 
     const connection: Connection = {
       from: {
-        id: fromId,
-        point: parseInt(fromPoint),
+        componentId: fromId,
+        pointId: parseInt(fromPoint),
       },
       to: {
-        id: toId,
-        point: parseInt(toPoint),
+        componentId: toId,
+        pointId: parseInt(toPoint),
       },
       lines: parseConnectionLines(lineParts),
     };

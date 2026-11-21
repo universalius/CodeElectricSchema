@@ -1,8 +1,8 @@
-import { LabelPosition, Orientation } from "../types/BaseElecComponent";
+import { LabelPosition, Orientation } from "../types/ElecComponentDefinition";
 
 export const getRotation = (orientation: Orientation): number => {
   if (!orientation || orientation === Orientation.Horizontal) {
-    return undefined;
+    return 0;
   }
 
   if (
@@ -24,7 +24,7 @@ export const getRotation = (orientation: Orientation): number => {
     return 360;
   }
 
-  return undefined;
+  return 0;
 };
 
 export const getTranslate = (

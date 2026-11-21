@@ -5,12 +5,12 @@ import {
   getTranslate,
   getLabelCoords,
 } from "../helpers/componentPositionHelpers";
-import { type BaseElecComponent } from "../types/BaseElecComponent";
+import { type ElecComponentDefinition } from "../types/ElecComponentDefinition";
 
 export const BaseSvgComponent = ({
   component,
 }: {
-  component: BaseElecComponent;
+  component: ElecComponentDefinition;
 }) => {
   const rotationAngle = getRotation(component?.orientation);
   const svgElement = parseSvgString(svg);

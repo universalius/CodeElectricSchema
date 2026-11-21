@@ -1,17 +1,15 @@
 import { useState } from "react";
-import heroImg from "./assets/hero.png";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "./assets/vite.svg";
 import "./App.css";
 import { parseCode } from "./helpers/parseCode";
-import { Diode } from "./components/Diode/Diode";
 import {
   ComponentType,
   LabelPosition,
   Orientation,
-  type BaseElecComponent,
-} from "./types/BaseElecComponent";
-import { Resistor } from "./components/Diode/Resistor";
+  type ElecComponentDefinition,
+} from "./types/ElecComponentDefinition";
+import { buildSchemeSvg } from "./helpers/buildScheme";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -49,27 +47,40 @@ Dot5-2 | Dot3-4;
 Dot5-3 - Gnd4-1;
 `;
 
-  const result = parseCode(testComponents, testConnections);
+  const testComponents1 = `
+Vcc1 5V; 
+R1 R1;
+D1 D1;
+`;
 
-  console.log("Parsed Result:", result);
+  const testConnections1 = `
+Vcc1-2 > R1-1;
+R1-2 > D1-1;
+`;
 
-  const diode: BaseElecComponent = {
+  const result = parseCode(testComponents1, testConnections1);
+
+  // console.log("Parsed Result:", result);
+
+  const diode: ElecComponentDefinition = {
     label: { name: "D1", position: LabelPosition.Bottom },
     id: "D1",
     type: ComponentType.D,
     orientation: Orientation.Vertical,
   };
 
-  const resistor: BaseElecComponent = {
+  const resistor: ElecComponentDefinition = {
     label: { name: "R1", position: LabelPosition.Right },
     id: "R1",
     type: ComponentType.R,
     orientation: Orientation.Vertical,
   };
 
+  const testSvg = buildSchemeSvg(result.components, result.connections);
+
   return (
     <>
-      <section id="center">
+      {/* <section id="center">
         <svg
           width="300"
           height="300"
@@ -77,9 +88,17 @@ Dot5-3 - Gnd4-1;
           style={{ color: "black", backgroundColor: "pink" }}
         >
           <Diode component={diode} />
-          {/* <Resistor component={resistor} /> */}
+          <Resistor component={resistor} />
         </svg>
-      </section>
+      </section> */}
+
+      <div
+        ref={(node) => {
+          if (node && testSvg) {
+            node.replaceChildren(testSvg);
+          }
+        }}
+      />
 
       <div className="ticks"></div>
 

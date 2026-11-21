@@ -7,10 +7,14 @@ import {
 } from "../../helpers/componentPositionHelpers";
 import {
   LabelPosition,
-  type BaseElecComponent,
-} from "../../types/BaseElecComponent";
+  type ElecComponentDefinition,
+} from "../../types/ElecComponentDefinition";
 
-export const Diode = ({ component }: { component: BaseElecComponent }) => {
+export const Diode = ({
+  component,
+}: {
+  component: ElecComponentDefinition;
+}) => {
   const rotationAngle = getRotation(component?.orientation);
   const svgElement = parseSvgString(svg);
 

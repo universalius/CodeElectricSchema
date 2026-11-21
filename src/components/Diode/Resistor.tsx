@@ -5,9 +5,13 @@ import {
   getTranslate,
   getLabelCoords,
 } from "../../helpers/componentPositionHelpers";
-import { type BaseElecComponent } from "../../types/BaseElecComponent";
+import { type ElecComponentDefinition } from "../../types/ElecComponentDefinition";
 
-export const Resistor = ({ component }: { component: BaseElecComponent }) => {
+export const Resistor = ({
+  component,
+}: {
+  component: ElecComponentDefinition;
+}) => {
   const rotationAngle = getRotation(component?.orientation);
   const svgElement = parseSvgString(svg);
 

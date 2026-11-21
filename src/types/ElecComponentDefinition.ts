@@ -49,7 +49,7 @@ export enum ComponentType {
   Pin = "Pin",
 }
 
-export type BaseElecComponent = {
+export type ElecComponentDefinition = {
   id: string;
   type: ComponentType;
   label?: Label;
@@ -57,13 +57,15 @@ export type BaseElecComponent = {
 };
 
 export enum ConnectionOrientation {
-  Horizontal = "-",
-  Vertical = "|",
+  Right = ">",
+  Left = "<",
+  Up = "^",
+  Down = "v",
 }
 
 export type ConnectionPoint = {
-  id: string;
-  point: number;
+  componentId: string;
+  pointId: number;
 };
 
 export type ConnectionLine = {
@@ -76,3 +78,5 @@ export type Connection = {
   to: ConnectionPoint;
   lines: ConnectionLine[];
 };
+
+export type Point = { x: number; y: number };
