@@ -4,7 +4,11 @@ import {
   getTranslate,
   getLabelCoords,
 } from "../helpers/componentPositionHelpers";
-import type { ElecComponentDefinition, Point } from "./ElecComponentDefinition";
+import {
+  LabelPosition,
+  type ElecComponentDefinition,
+  type Point,
+} from "./ElecComponentDefinition";
 
 export const SVG_NS = "http://www.w3.org/2000/svg" as const;
 
@@ -15,6 +19,7 @@ export class BaseSvgComponent {
   rotationAngle: number;
   component: ElecComponentDefinition;
   currentPosition: Point;
+  showCompIdInsteadLabel = false;
   private _baseSvg: SVGGElement | null = null;
 
   constructor(svgString: string, component: ElecComponentDefinition) {
@@ -56,15 +61,23 @@ export class BaseSvgComponent {
 
     const group = document.createElementNS(SVG_NS, "g");
 
-    const label = this.component?.label;
+    const label = this.component.label;
     if (label?.name) {
       const text = document.createElementNS(SVG_NS, "text");
       text.setAttribute("x", String(labelCoords.x));
       text.setAttribute("y", String(labelCoords.y));
+      if (
+        !label.position ||
+        [LabelPosition.Top, LabelPosition.Bottom].includes(label.position)
+      ) {
+        text.setAttribute("text-anchor", "middle");
+      }
       if (labelCoords.direction) {
         text.setAttribute("direction", labelCoords.direction);
       }
-      text.textContent = label.name;
+      text.textContent = this.showCompIdInsteadLabel
+        ? this.component.id
+        : label.name;
       group.appendChild(text);
     }
 

@@ -13,25 +13,37 @@ import { TerminalSvgContainer } from "../types/TerminalSvgContainer";
 
 export const createSvgContainer = (
   component: ElecComponentDefinition,
+  showCompIdInsteadLabel = false,
 ): BaseSvgComponent => {
+  let container: BaseSvgComponent;
+
   switch (component.type) {
     case ComponentType.Vcc:
-      return new TerminalSvgContainer(component);
     case ComponentType.Gnd:
-      return new TerminalSvgContainer(component);
+      container = new TerminalSvgContainer(component);
+      break;
     case ComponentType.D:
-      return new DiodeSvgContainer(component);
+      container = new DiodeSvgContainer(component);
+      break;
     case ComponentType.R:
-      return new ResistorSvgContainer(component);
+      container = new ResistorSvgContainer(component);
+      break;
     case ComponentType.C:
-      return new CapacitorSvgContainer(component);
+      container = new CapacitorSvgContainer(component);
+      break;
     case ComponentType.LED:
-      return new LedSvgContainer(component);
+      container = new LedSvgContainer(component);
+      break;
     case ComponentType.Switch:
-      return new SwitchSvgContainer(component);
+      container = new SwitchSvgContainer(component);
+      break;
     case ComponentType.Dot:
-      return new DotSvgContainer(component);
+      container = new DotSvgContainer(component);
+      break;
     default:
       throw new Error(`Unsupported component type: ${component.type}`);
   }
+
+  container.showCompIdInsteadLabel = showCompIdInsteadLabel;
+  return container;
 };

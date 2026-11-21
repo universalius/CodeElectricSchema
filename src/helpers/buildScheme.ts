@@ -10,9 +10,11 @@ import { createSvgContainer } from "./svgContainerFactory";
 export const buildScheme = ({
   components,
   connections,
+  showCompIdInsteadLabel = false,
 }: {
   components: ElecComponentDefinition[];
   connections: Connection[];
+  showCompIdInsteadLabel?: boolean;
 }): {
   svgComponents: Array<BaseSvgComponent>;
   linesCoords: Array<Point[]>;
@@ -45,10 +47,10 @@ export const buildScheme = ({
 
     const fromComponent =
       svgComponents.find((c) => c.component.id === from.componentId) ||
-      createSvgContainer(fromCompDefinition);
+      createSvgContainer(fromCompDefinition, showCompIdInsteadLabel);
     const toComponent =
       svgComponents.find((c) => c.component.id === to.componentId) ||
-      createSvgContainer(toCompDefinition);
+      createSvgContainer(toCompDefinition, showCompIdInsteadLabel);
 
     // if (index === 0) {
     //   svgComponents.push(fromComponent);
@@ -96,10 +98,12 @@ export const buildScheme = ({
 export const buildSchemeSvg = (
   components: ElecComponentDefinition[],
   connections: Connection[],
+  options: { showCompIdInsteadLabel?: boolean } = {},
 ): SVGSVGElement => {
   const { svgComponents, linesCoords } = buildScheme({
     components,
     connections,
+    showCompIdInsteadLabel: options.showCompIdInsteadLabel,
   });
   const svgElement = document.createElementNS(SVG_NS, "svg");
   svgElement.setAttribute("width", "1000");

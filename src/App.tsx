@@ -26,9 +26,17 @@ const INITIAL_CONNECTIONS = [
   "LED1-2 > Switch1-1;",
 ].join("\n");
 
-function buildSvgMarkup(componentsText: string, connectionsText: string): string {
-  const { components, connections } = parseCode(componentsText, connectionsText);
-  return buildSchemeSvg(components, connections).outerHTML;
+function buildSvgMarkup(
+  componentsText: string,
+  connectionsText: string,
+  showCompIdInsteadLabel: boolean,
+): string {
+  const { components, connections } = parseCode(
+    componentsText,
+    connectionsText,
+  );
+  return buildSchemeSvg(components, connections, { showCompIdInsteadLabel })
+    .outerHTML;
 }
 
 function App() {
@@ -40,10 +48,18 @@ function App() {
   );
   const [svgMarkup, setSvgMarkup] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const [showCompIdInsteadLabel, setshowCompIdInsteadLabel] =
+    useState<boolean>(false);
 
-  const renderScheme = (components: string, connections: string) => {
+  const renderScheme = (
+    components: string,
+    connections: string,
+    showCompIdInsteadLabel: boolean,
+  ) => {
     try {
-      setSvgMarkup(buildSvgMarkup(components, connections));
+      setSvgMarkup(
+        buildSvgMarkup(components, connections, showCompIdInsteadLabel),
+      );
       setError(null);
     } catch (e) {
       setSvgMarkup("");
@@ -53,14 +69,19 @@ function App() {
 
   // Render once on mount (from localStorage if present, otherwise the example).
   useEffect(() => {
-    renderScheme(componentsText, connectionsText);
+    renderScheme(componentsText, connectionsText, showCompIdInsteadLabel);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleOk = () => {
     saveStored(COMPONENTS_STORAGE_KEY, componentsText);
     saveStored(CONNECTIONS_STORAGE_KEY, connectionsText);
-    renderScheme(componentsText, connectionsText);
+    renderScheme(componentsText, connectionsText, showCompIdInsteadLabel);
+  };
+
+  const handleshowCompIdInsteadLabelChange = (checked: boolean) => {
+    setshowCompIdInsteadLabel(checked);
+    renderScheme(componentsText, connectionsText, checked);
   };
 
   return (
@@ -89,16 +110,26 @@ function App() {
         </label>
       </div>
 
-      <button type="button" onClick={handleOk}>
-        Ok
-      </button>
+      <div className="editor-actions">
+        <button type="button" onClick={handleOk}>
+          Ok
+        </button>
+
+        <label className="editor-checkbox">
+          <input
+            type="checkbox"
+            checked={showCompIdInsteadLabel}
+            onChange={(e) =>
+              handleshowCompIdInsteadLabelChange(e.target.checked)
+            }
+          />
+          Show component ids
+        </label>
+      </div>
 
       {error && <p className="editor-error">{error}</p>}
 
-      <div
-        className="scheme"
-        dangerouslySetInnerHTML={{ __html: svgMarkup }}
-      />
+      <div className="scheme" dangerouslySetInnerHTML={{ __html: svgMarkup }} />
     </div>
   );
 }
