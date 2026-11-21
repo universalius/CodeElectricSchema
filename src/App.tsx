@@ -85,51 +85,53 @@ function App() {
   };
 
   return (
-    <div className="editor">
-      <h1>Electrical Scheme Editor</h1>
+    <div className="editor-shell">
+      <label className="editor-field editor-field-side editor-components">
+        <span>Components</span>
+        <textarea
+          value={componentsText}
+          onChange={(e) => setComponentsText(e.target.value)}
+          rows={45}
+          spellCheck={false}
+        />
+      </label>
 
-      <div className="editor-grid">
-        <label className="editor-field">
-          <span>Components</span>
-          <textarea
-            value={componentsText}
-            onChange={(e) => setComponentsText(e.target.value)}
-            rows={10}
-            spellCheck={false}
-          />
-        </label>
+      <div className="editor">
+        <h1>Electrical Scheme Editor</h1>
 
-        <label className="editor-field">
-          <span>Connections</span>
-          <textarea
-            value={connectionsText}
-            onChange={(e) => setConnectionsText(e.target.value)}
-            rows={10}
-            spellCheck={false}
-          />
-        </label>
+        <div className="editor-actions">
+          <label className="editor-checkbox">
+            <input
+              type="checkbox"
+              checked={showCompIdInsteadLabel}
+              onChange={(e) =>
+                handleshowCompIdInsteadLabelChange(e.target.checked)
+              }
+            />
+            Show component ids
+          </label>
+        </div>
+
+        {error && <p className="editor-error">{error}</p>}
+
+        <div
+          className="scheme"
+          dangerouslySetInnerHTML={{ __html: svgMarkup }}
+        />
       </div>
 
-      <div className="editor-actions">
+      <label className="editor-field editor-field-side">
+        <span>Connections</span>
         <button type="button" onClick={handleOk}>
-          Ok
+          Apply
         </button>
-
-        <label className="editor-checkbox">
-          <input
-            type="checkbox"
-            checked={showCompIdInsteadLabel}
-            onChange={(e) =>
-              handleshowCompIdInsteadLabelChange(e.target.checked)
-            }
-          />
-          Show component ids
-        </label>
-      </div>
-
-      {error && <p className="editor-error">{error}</p>}
-
-      <div className="scheme" dangerouslySetInnerHTML={{ __html: svgMarkup }} />
+        <textarea
+          value={connectionsText}
+          onChange={(e) => setConnectionsText(e.target.value)}
+          rows={40}
+          spellCheck={false}
+        />
+      </label>
     </div>
   );
 }
