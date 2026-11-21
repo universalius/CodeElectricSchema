@@ -15,6 +15,7 @@ export class BaseSvgComponent {
   rotationAngle: number;
   component: ElecComponentDefinition;
   currentPosition: Point;
+  private _baseSvg: SVGGElement | null = null;
 
   constructor(svgString: string, component: ElecComponentDefinition) {
     this.svgElement = parseSvgString(svgString);
@@ -25,28 +26,20 @@ export class BaseSvgComponent {
   }
 
   get points(): Array<Point> {
-    console.log(
-      "this.rotationAngle",
-      this.rotationAngle,
-      "this.width",
-      this.width,
-      "this.height",
-      this.height,
-    );
-    if (this.rotationAngle === 0 || this.rotationAngle === 180) {
-      return [
-        { x: 0, y: this.height / 2 },
-        { x: this.width, y: this.height / 2 },
-      ];
-    }
-
+    // Terminals are always the left-middle and right-middle of the symbol in
+    // LOCAL coordinates. Rotation is handled by the transform attribute, so the
+    // local terminal points never change based on orientation.
     return [
-      { x: this.width / 2, y: 0 },
-      { x: this.width / 2, y: this.height },
+      { x: 0, y: this.height / 2 },
+      { x: this.width, y: this.height / 2 },
     ];
   }
 
   get baseSvg(): SVGGElement {
+    if (this._baseSvg) {
+      return this._baseSvg;
+    }
+
     const rotate = this.rotationAngle
       ? `rotate(${this.rotationAngle})`
       : undefined;
@@ -84,14 +77,55 @@ export class BaseSvgComponent {
     );
     group.appendChild(innerGroup);
 
-    return group as never as SVGGElement;
+    this._baseSvg = group as never as SVGGElement;
+
+    return this._baseSvg;
+  }
+
+  /**
+   * Maps a point from the component's local (unrotated) coordinate space to
+   * its orientation-adjusted coordinates (rotate + orientation translate),
+   * WITHOUT the scheme position translate.
+   */
+  transformLocalPoint(localPoint: Point): Point {
+    // normalize to one of 0 / 90 / 180 / 270
+    const angle = ((this.rotationAngle % 360) + 360) % 360;
+
+    // 1) rotate(angle) around the origin (innermost SVG transform)
+    let rx: number;
+    let ry: number;
+    switch (angle) {
+      case 90:
+        rx = -localPoint.y;
+        ry = localPoint.x;
+        break;
+      case 180:
+        rx = -localPoint.x;
+        ry = -localPoint.y;
+        break;
+      case 270:
+        rx = localPoint.y;
+        ry = -localPoint.x;
+        break;
+      default:
+        rx = localPoint.x;
+        ry = localPoint.y;
+    }
+
+    // 2) orientation translate (mirrors getTranslate())
+    const ox = angle === 90 ? this.height : angle === 180 ? this.width : 0;
+    const oy = angle === 180 ? this.height : angle === 270 ? this.width : 0;
+
+    return { x: rx + ox, y: ry + oy };
   }
 
   getPointCTM(localPoint: Point): Point {
-    console.log("localPoint", localPoint, "this.baseSvg", this.baseSvg);
-    const ctm = this.baseSvg.getScreenCTM();
+    const transformed = this.transformLocalPoint(localPoint);
 
-    //Transform the local point into the root SVG coordinate space
-    return new DOMPoint(localPoint.x, localPoint.y).matrixTransform(ctm);
+    // 3) scheme position (the translate set on the component's group)
+    return {
+      x: transformed.x + (this.currentPosition?.x ?? 0),
+      y: transformed.y + (this.currentPosition?.y ?? 0),
+    };
   }
 }

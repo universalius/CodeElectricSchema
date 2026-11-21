@@ -57,7 +57,7 @@ export const buildScheme = ({
 
     if (!fromComponent.currentPosition) {
       svgComponents.push(fromComponent);
-      fromComponent.currentPosition = fromComponent.baseSvg.getBBox();
+      fromComponent.currentPosition = { x: 0, y: 0 };
     }
 
     const fromPoint = fromComponent.points[from.pointId - 1];
@@ -79,8 +79,8 @@ export const buildScheme = ({
       svgComponents.push(toComponent);
       const toPoint = toComponent.points[to.pointId - 1];
 
-      toComponent.currentPosition = moveGroupToPoint(
-        toComponent.baseSvg,
+      toComponent.currentPosition = moveComponentToPoint(
+        toComponent,
         toPoint,
         linesCoords[linesCoords.length - 1][1],
       );
@@ -102,9 +102,9 @@ export const buildSchemeSvg = (
     connections,
   });
   const svgElement = document.createElementNS(SVG_NS, "svg");
-  svgElement.setAttribute("width", "500");
+  svgElement.setAttribute("width", "1000");
   svgElement.setAttribute("height", "300");
-  svgElement.setAttribute("viewBox", "-75 -75 250 150");
+  svgElement.setAttribute("viewBox", "-75 -75 500 150");
   svgElement.setAttribute("style", "color: black; background-color: pink;");
   svgElement.setAttribute("xmlns", SVG_NS);
 
@@ -136,37 +136,19 @@ export const buildSchemeSvg = (
   return svgElement;
 };
 
-function moveGroupToPoint(
-  group: SVGGElement,
-  groupPoint: Point, // e.g. group.getBoundingClientRect().left/top
-  // rect: SVGRectElement,
-  target: Point, // e.g. mouse event.clientX or getBoundingClientRect().left
-): Point | undefined {
-  const groupCTM = group.getScreenCTM();
-  if (!groupCTM) return;
-
-  // 1. Convert target screen coordinates into the parent's SVG coordinate space
-  // const pt = svg.createSVGPoint();
-  // pt.x = targetScreenX;
-  // pt.y = targetScreenY;
-  const pt = new DOMPoint(target.x, target.y);
-  const localTarget = pt.matrixTransform(groupCTM.inverse());
-
-  // 2. Account for the rect's local offset inside the <g>
-  // (If rect is at x="0" y="0", rectBox.x and rectBox.y are 0)
-  // const rectBox = rect.getBBox();
-  const tx = localTarget.x - groupPoint.x;
-  const ty = localTarget.y - groupPoint.y;
-
-  // 3. Move the entire <g> group (moves both rect and text together)
-  // if (animate) {
-  //   group.style.transition = "transform 300ms ease-out";
-  // } else {
-  //   group.style.transition = "none";
-  // }
-  // group.style.transform = `translate(${tx}px, ${ty}px)`;
-
-  return { x: tx, y: ty };
+/**
+ * Compute the translate for a component's group so that its terminal
+ * `groupPoint` (in local coordinates) lands exactly on `target` (root SVG coords).
+ */
+function moveComponentToPoint(
+  component: BaseSvgComponent,
+  groupPoint: Point,
+  target: Point,
+): Point {
+  // terminal position in root coords = position + transformLocalPoint(groupPoint)
+  // so: position = target - transformLocalPoint(groupPoint)
+  const local = component.transformLocalPoint(groupPoint);
+  return { x: target.x - local.x, y: target.y - local.y };
 }
 
 const getLineEndPoint = (point1: Point, line: ConnectionLine): Point => {
