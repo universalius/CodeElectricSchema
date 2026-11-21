@@ -31,12 +31,13 @@ function buildSvgMarkup(
   connectionsText: string,
   showCompIdInsteadLabel: boolean,
 ): string {
-  const { components, connections } = parseCode(
+  const { components, connectionsBlocks } = parseCode(
     componentsText,
     connectionsText,
   );
-  return buildSchemeSvg(components, connections, { showCompIdInsteadLabel })
-    .outerHTML;
+  return buildSchemeSvg(components, connectionsBlocks, {
+    showCompIdInsteadLabel,
+  }).outerHTML;
 }
 
 function App() {

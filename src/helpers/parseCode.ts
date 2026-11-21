@@ -7,6 +7,7 @@ import {
   type Connection,
   type ConnectionLine,
   type Label,
+  type ConnectionsBlock,
 } from "../types/ElecComponentDefinition";
 
 /**
@@ -22,11 +23,11 @@ export const parseCode = (
   connectionsText: string,
 ): {
   components: ElecComponentDefinition[];
-  connections: Connection[];
+  connectionsBlocks: ConnectionsBlock[];
 } => {
   const components = parseComponents(definitionsText);
-  const connections = parseConnections(connectionsText);
-  return { components, connections };
+  const connectionsBlocks = parseConnections(connectionsText);
+  return { components, connectionsBlocks };
 };
 
 export const parseComponents = (text: string): ElecComponentDefinition[] => {
@@ -55,14 +56,26 @@ export const parseComponents = (text: string): ElecComponentDefinition[] => {
   return components;
 };
 
-export const parseConnections = (text: string): Connection[] => {
+export const parseConnections = (text: string): ConnectionsBlock[] => {
   const textLines = text
     .split(";\n")
     .filter((line) => line.trim() !== "")
     .map((line) => line.trim().replace(";", ""));
 
-  const connections: Connection[] = [];
+  const connectionsBlocks: Array<ConnectionsBlock> = [];
+
+  let connections: Connection[] = [];
+  let blockPosition: ConnectionOrientation;
   for (const textLine of textLines) {
+    if (textLine.startsWith("---")) {
+      connectionsBlocks.push({
+        connections,
+        position: blockPosition,
+      });
+      blockPosition = getBlockPosition(textLine);
+      connections = [];
+    }
+
     const parts = textLine.split(" ");
     const [fromId, fromPoint] = parts[0].split("-");
     const [toId, toPoint] = parts[parts.length - 1].split("-");
@@ -83,7 +96,15 @@ export const parseConnections = (text: string): Connection[] => {
 
     connections.push(connection);
   }
-  return connections;
+
+  if (connections.length) {
+    connectionsBlocks.push({
+      connections,
+      position: blockPosition,
+    });
+  }
+
+  return connectionsBlocks;
 };
 
 const parseComponentType = (typeStr: string): ComponentType => {
@@ -177,4 +198,19 @@ const parseConnectionLines = (parts: string[]): ConnectionLine[] => {
   }
 
   return lines;
+};
+
+const getBlockPosition = (text: string): ConnectionOrientation => {
+  if (text.includes(ConnectionOrientation.Up)) return ConnectionOrientation.Up;
+
+  if (text.includes(ConnectionOrientation.Down))
+    return ConnectionOrientation.Down;
+
+  if (text.includes(ConnectionOrientation.Left))
+    return ConnectionOrientation.Left;
+
+  if (text.includes(ConnectionOrientation.Right))
+    return ConnectionOrientation.Right;
+
+  return undefined;
 };

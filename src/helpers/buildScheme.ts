@@ -3,6 +3,7 @@ import {
   type Connection,
   type ConnectionLine,
   type Point,
+  type ConnectionsBlock,
 } from "../types/ElecComponentDefinition";
 import { BaseSvgComponent, SVG_NS } from "../types/BaseSvgContainer";
 import { createSvgContainer } from "./svgContainerFactory";
@@ -97,14 +98,9 @@ export const buildScheme = ({
 
 export const buildSchemeSvg = (
   components: ElecComponentDefinition[],
-  connections: Connection[],
+  connectionsBlocks: ConnectionsBlock[],
   options: { showCompIdInsteadLabel?: boolean } = {},
 ): SVGSVGElement => {
-  const { svgComponents, linesCoords } = buildScheme({
-    components,
-    connections,
-    showCompIdInsteadLabel: options.showCompIdInsteadLabel,
-  });
   const svgElement = document.createElementNS(SVG_NS, "svg");
   svgElement.setAttribute("width", "1000");
   svgElement.setAttribute("height", "600");
@@ -112,30 +108,42 @@ export const buildSchemeSvg = (
   svgElement.setAttribute("style", "color: black; background-color: pink;");
   svgElement.setAttribute("xmlns", SVG_NS);
 
-  const componentGroup = document.createElementNS(SVG_NS, "g");
-  for (const svgComponent of svgComponents) {
-    const baseSvg = svgComponent.baseSvg;
-    baseSvg.setAttribute(
-      "transform",
-      `translate(${svgComponent.currentPosition.x}, ${svgComponent.currentPosition.y})`,
-    );
+  for (const connectionsBlock of connectionsBlocks) {
+    const { svgComponents, linesCoords } = buildScheme({
+      components,
+      connections: connectionsBlock.connections,
+      showCompIdInsteadLabel: options.showCompIdInsteadLabel,
+    });
 
-    componentGroup.appendChild(baseSvg);
-  }
+    const componentGroup = document.createElementNS(SVG_NS, "g");
+    for (const svgComponent of svgComponents) {
+      const baseSvg = svgComponent.baseSvg;
+      baseSvg.setAttribute(
+        "transform",
+        `translate(${svgComponent.currentPosition.x}, ${svgComponent.currentPosition.y})`,
+      );
 
-  const linesGroup = document.createElementNS(SVG_NS, "g");
-  for (const [point1, point2] of linesCoords) {
-    const lineElement = document.createElementNS(SVG_NS, "line");
-    lineElement.setAttribute("x1", String(point1.x));
-    lineElement.setAttribute("y1", String(point1.y));
-    lineElement.setAttribute("x2", String(point2.x));
-    lineElement.setAttribute("y2", String(point2.y));
-    lineElement.setAttribute("stroke", "green");
-    lineElement.setAttribute("stroke-width", "2");
-    linesGroup.appendChild(lineElement);
+      componentGroup.appendChild(baseSvg);
+    }
+
+    const linesGroup = document.createElementNS(SVG_NS, "g");
+    for (const [point1, point2] of linesCoords) {
+      const lineElement = document.createElementNS(SVG_NS, "line");
+      lineElement.setAttribute("x1", String(point1.x));
+      lineElement.setAttribute("y1", String(point1.y));
+      lineElement.setAttribute("x2", String(point2.x));
+      lineElement.setAttribute("y2", String(point2.y));
+      lineElement.setAttribute("stroke", "green");
+      lineElement.setAttribute("stroke-width", "2");
+      linesGroup.appendChild(lineElement);
+    }
+
+    const blockGroup = document.createElementNS(SVG_NS, "g");
+    blockGroup.appendChild(componentGroup);
+    blockGroup.appendChild(linesGroup);
+
+    svgElement.appendChild(blockGroup);
   }
-  svgElement.appendChild(componentGroup);
-  svgElement.appendChild(linesGroup);
 
   return svgElement;
 };

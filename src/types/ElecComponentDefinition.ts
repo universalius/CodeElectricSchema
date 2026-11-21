@@ -80,4 +80,9 @@ export type Connection = {
   lines: ConnectionLine[];
 };
 
+export type ConnectionsBlock = {
+  connections: Array<Connection>;
+  position?: ConnectionOrientation;
+};
+
 export type Point = { x: number; y: number };
