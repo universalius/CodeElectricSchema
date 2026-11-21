@@ -1,4 +1,5 @@
 import {
+  ConnectionOrientation,
   type ElecComponentDefinition,
   type Connection,
   type ConnectionLine,
@@ -101,12 +102,16 @@ export const buildSchemeSvg = (
   connectionsBlocks: ConnectionsBlock[],
   options: { showCompIdInsteadLabel?: boolean } = {},
 ): SVGSVGElement => {
+  //console.log("buildSchemeSvg", connectionsBlocks);
+
   const svgElement = document.createElementNS(SVG_NS, "svg");
   svgElement.setAttribute("width", "1000");
   svgElement.setAttribute("height", "600");
   svgElement.setAttribute("viewBox", "-75 -75 1000 600");
   svgElement.setAttribute("style", "color: black; background-color: pink;");
   svgElement.setAttribute("xmlns", SVG_NS);
+
+  let lastBlockBox: Box | null = null;
 
   for (const connectionsBlock of connectionsBlocks) {
     const { svgComponents, linesCoords } = buildScheme({
@@ -142,10 +147,150 @@ export const buildSchemeSvg = (
     blockGroup.appendChild(componentGroup);
     blockGroup.appendChild(linesGroup);
 
+    const blockBox = getBlockBBox(svgComponents, linesCoords);
+    let blockBoxInSvg = blockBox;
+
+    const lastGroup = svgElement.lastElementChild;
+    if (lastGroup && lastBlockBox && connectionsBlock.position) {
+      const translate = getBlockTranslate(
+        lastBlockBox,
+        blockBox,
+        connectionsBlock.position,
+      );
+      blockGroup.setAttribute(
+        "transform",
+        `translate(${translate.x}, ${translate.y})`,
+      );
+      blockBoxInSvg = translateBox(blockBox, translate);
+    }
+
     svgElement.appendChild(blockGroup);
+    lastBlockBox = blockBoxInSvg;
   }
 
   return svgElement;
+};
+
+type Box = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+const BLOCK_SHIFT_PX = 20;
+const EXTRA_SHIFT_PX = 20;
+
+const EMPTY_BOX: Box = { x: 0, y: 0, width: 0, height: 0 };
+
+const getBlockBBox = (
+  svgComponents: Array<BaseSvgComponent>,
+  linesCoords: Array<Point[]>,
+): Box => {
+  let minX = Number.POSITIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+
+  const includePoint = (point: Point) => {
+    minX = Math.min(minX, point.x);
+    minY = Math.min(minY, point.y);
+    maxX = Math.max(maxX, point.x);
+    maxY = Math.max(maxY, point.y);
+  };
+
+  for (const component of svgComponents) {
+    const corners: Point[] = [
+      { x: 0, y: 0 },
+      { x: component.width, y: 0 },
+      { x: 0, y: component.height },
+      { x: component.width, y: component.height },
+    ];
+
+    for (const corner of corners) {
+      const oriented = component.transformLocalPoint(corner);
+      includePoint({
+        x: oriented.x + component.currentPosition.x,
+        y: oriented.y + component.currentPosition.y,
+      });
+    }
+
+    for (const point of component.points) {
+      includePoint(component.getPointCTM(point));
+    }
+  }
+
+  for (const [point1, point2] of linesCoords) {
+    includePoint(point1);
+    includePoint(point2);
+  }
+
+  if (minX > maxX || minY > maxY) {
+    return EMPTY_BOX;
+  }
+
+  return {
+    x: minX,
+    y: minY,
+    width: maxX - minX,
+    height: maxY - minY,
+  };
+};
+
+const translateBox = (box: Box, translate: Point): Box => ({
+  x: box.x + translate.x,
+  y: box.y + translate.y,
+  width: box.width,
+  height: box.height,
+});
+
+const getBlockTranslate = (
+  lastBox: Box,
+  currentBox: Box,
+  orientation: ConnectionOrientation,
+): Point => {
+  switch (orientation) {
+    case ConnectionOrientation.Right:
+      return {
+        x:
+          lastBox.x +
+          lastBox.width +
+          BLOCK_SHIFT_PX +
+          EXTRA_SHIFT_PX -
+          currentBox.x,
+        y: 0,
+      };
+    case ConnectionOrientation.Left:
+      return {
+        x:
+          lastBox.x -
+          BLOCK_SHIFT_PX -
+          EXTRA_SHIFT_PX -
+          (currentBox.x + currentBox.width),
+        y: 0,
+      };
+    case ConnectionOrientation.Up:
+      return {
+        x: 0,
+        y:
+          lastBox.y -
+          BLOCK_SHIFT_PX -
+          EXTRA_SHIFT_PX -
+          (currentBox.y + currentBox.height),
+      };
+    case ConnectionOrientation.Down:
+      return {
+        x: 0,
+        y:
+          lastBox.y +
+          lastBox.height +
+          BLOCK_SHIFT_PX +
+          EXTRA_SHIFT_PX -
+          currentBox.y,
+      };
+    default:
+      return { x: 0, y: 0 };
+  }
 };
 
 /**

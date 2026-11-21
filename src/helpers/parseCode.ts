@@ -74,6 +74,7 @@ export const parseConnections = (text: string): ConnectionsBlock[] => {
       });
       blockPosition = getBlockPosition(textLine);
       connections = [];
+      continue;
     }
 
     const parts = textLine.split(" ");
