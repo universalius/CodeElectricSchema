@@ -7,6 +7,7 @@ import { CapacitorSvgContainer } from "../types/CapacitorSvgContainer";
 import { DiodeSvgContainer } from "../types/DiodeSvgContainer";
 import { DotSvgContainer } from "../types/DotSvgContainer";
 import { LedSvgContainer } from "../types/LedSvgContainer";
+import { PhotodiodeSvgContainer } from "../types/PhotodiodeSvgContainer";
 import { ResistorSvgContainer } from "../types/ResistorSvgContainer";
 import { SwitchSvgContainer } from "../types/SwitchSvgContainer";
 import { TerminalSvgContainer } from "../types/TerminalSvgContainer";
@@ -20,10 +21,14 @@ export const createSvgContainer = (
   switch (component.type) {
     case ComponentType.Vcc:
     case ComponentType.Gnd:
+    case ComponentType.Terminal:
       container = new TerminalSvgContainer(component);
       break;
     case ComponentType.D:
       container = new DiodeSvgContainer(component);
+      break;
+    case ComponentType.PD:
+      container = new PhotodiodeSvgContainer(component);
       break;
     case ComponentType.R:
       container = new ResistorSvgContainer(component);
