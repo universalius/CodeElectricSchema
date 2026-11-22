@@ -1,11 +1,9 @@
-import type {
-  ElecComponentDefinition,
-  Point,
-} from "../ElecComponentDefinition";
+import type { ElecComponentDefinition } from "../ElecComponentDefinition";
+import type { Point } from "../geometry";
 import svgString from "../../assets/switch.svg?raw";
-import { BaseSvgComponent } from "./BaseSvgContainer";
+import { BaseSvgComponent } from "./BaseSvgComponent";
 
-export class SwitchSvgContainer extends BaseSvgComponent {
+export class SwitchSvgComponent extends BaseSvgComponent {
   constructor(component: ElecComponentDefinition) {
     super(svgString, component);
   }

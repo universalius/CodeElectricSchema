@@ -1,14 +1,14 @@
 import {
-  TerminalSvgContainer,
-  DiodeSvgContainer,
-  PhotodiodeSvgContainer,
-  ResistorSvgContainer,
-  CapacitorSvgContainer,
-  LedSvgContainer,
-  SwitchSvgContainer,
-  DotSvgContainer,
+  TerminalSvgComponent,
+  DiodeSvgComponent,
+  PhotodiodeSvgComponent,
+  ResistorSvgComponent,
+  CapacitorSvgComponent,
+  LedSvgComponent,
+  SwitchSvgComponent,
+  DotSvgComponent,
 } from "../types/components";
-import type { BaseSvgComponent } from "../types/components/BaseSvgContainer";
+import type { BaseSvgComponent } from "../types/components/BaseSvgComponent";
 import {
   type ElecComponentDefinition,
   ComponentType,
@@ -24,28 +24,28 @@ export const createSvgContainer = (
     case ComponentType.Vcc:
     case ComponentType.Gnd:
     case ComponentType.Terminal:
-      container = new TerminalSvgContainer(component);
+      container = new TerminalSvgComponent(component);
       break;
     case ComponentType.D:
-      container = new DiodeSvgContainer(component);
+      container = new DiodeSvgComponent(component);
       break;
     case ComponentType.PD:
-      container = new PhotodiodeSvgContainer(component);
+      container = new PhotodiodeSvgComponent(component);
       break;
     case ComponentType.R:
-      container = new ResistorSvgContainer(component);
+      container = new ResistorSvgComponent(component);
       break;
     case ComponentType.C:
-      container = new CapacitorSvgContainer(component);
+      container = new CapacitorSvgComponent(component);
       break;
     case ComponentType.LED:
-      container = new LedSvgContainer(component);
+      container = new LedSvgComponent(component);
       break;
     case ComponentType.Switch:
-      container = new SwitchSvgContainer(component);
+      container = new SwitchSvgComponent(component);
       break;
     case ComponentType.Dot:
-      container = new DotSvgContainer(component);
+      container = new DotSvgComponent(component);
       break;
     default:
       throw new Error(`Unsupported component type: ${component.type}`);

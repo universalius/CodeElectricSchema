@@ -3,7 +3,7 @@ import {
   type Connection,
   type ConnectionsBlock,
 } from "../types/ElecComponentDefinition";
-import { BaseSvgComponent, SVG_NS } from "../types/components/BaseSvgContainer";
+import { BaseSvgComponent, SVG_NS } from "../types/components/BaseSvgComponent";
 import type { Box, Point } from "../types/geometry";
 import {
   getLineEndPoint,
