@@ -8,7 +8,10 @@ import type { Box, Point } from "../types/geometry";
 const BLOCK_SHIFT_PX = 20;
 const EXTRA_SHIFT_PX = 20;
 
-const EMPTY_BOX: Box = { x: 0, y: 0, width: 0, height: 0 };
+const EMPTY_BOX: Box = {
+  topLeftCorner: { x: 0, y: 0 },
+  size: { width: 0, height: 0 },
+};
 
 export const getBlockBox = (
   svgComponents: Array<BaseSvgComponent>,
@@ -57,18 +60,17 @@ export const getBlockBox = (
   }
 
   return {
-    x: minX,
-    y: minY,
-    width: maxX - minX,
-    height: maxY - minY,
+    topLeftCorner: { x: minX, y: minY },
+    size: { width: maxX - minX, height: maxY - minY },
   };
 };
 
 export const translateBox = (box: Box, translate: Point): Box => ({
-  x: box.x + translate.x,
-  y: box.y + translate.y,
-  width: box.width,
-  height: box.height,
+  topLeftCorner: {
+    x: box.topLeftCorner.x + translate.x,
+    y: box.topLeftCorner.y + translate.y,
+  },
+  size: box.size,
 });
 
 export const getBlockTranslate = (
@@ -80,40 +82,40 @@ export const getBlockTranslate = (
     case ConnectionOrientation.Right:
       return {
         x:
-          lastBox.x +
-          lastBox.width +
+          lastBox.topLeftCorner.x +
+          lastBox.size.width +
           BLOCK_SHIFT_PX +
           EXTRA_SHIFT_PX -
-          currentBox.x,
+          currentBox.topLeftCorner.x,
         y: 0,
       };
     case ConnectionOrientation.Left:
       return {
         x:
-          lastBox.x -
+          lastBox.topLeftCorner.x -
           BLOCK_SHIFT_PX -
           EXTRA_SHIFT_PX -
-          (currentBox.x + currentBox.width),
+          (currentBox.topLeftCorner.x + currentBox.size.width),
         y: 0,
       };
     case ConnectionOrientation.Up:
       return {
         x: 0,
         y:
-          lastBox.y -
+          lastBox.topLeftCorner.y -
           BLOCK_SHIFT_PX -
           EXTRA_SHIFT_PX -
-          (currentBox.y + currentBox.height),
+          (currentBox.topLeftCorner.y + currentBox.size.height),
       };
     case ConnectionOrientation.Down:
       return {
         x: 0,
         y:
-          lastBox.y +
-          lastBox.height +
+          lastBox.topLeftCorner.y +
+          lastBox.size.height +
           BLOCK_SHIFT_PX +
           EXTRA_SHIFT_PX -
-          currentBox.y,
+          currentBox.topLeftCorner.y,
       };
     default:
       return { x: 0, y: 0 };

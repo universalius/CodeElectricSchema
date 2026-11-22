@@ -3,7 +3,7 @@ import {
   Orientation,
   type ElecComponentDefinition,
 } from "../ElecComponentDefinition";
-import type { Point } from "../geometry";
+import type { Point, Size } from "../geometry";
 
 export const SVG_NS = "http://www.w3.org/2000/svg" as const;
 
@@ -25,6 +25,10 @@ export class BaseSvgComponent {
     this.height = this.svgElement.height.baseVal.value;
     this.component = component;
     this.rotationAngle = this.getRotation(component?.orientation);
+  }
+
+  get size(): Size {
+    return { width: this.width, height: this.height };
   }
 
   get points(): Array<Point> {
@@ -51,18 +55,13 @@ export class BaseSvgComponent {
     const rotate = this.rotationAngle
       ? `rotate(${this.rotationAngle})`
       : undefined;
-    const translate = this.getTranslate(
-      this.rotationAngle,
-      this.width,
-      this.height,
-    );
+    const translate = this.getTranslate(this.rotationAngle, this.size);
 
     const transform = [translate, rotate].filter(Boolean).join(" ");
 
     const labelCoords = this.getLabelCoords(
       this.rotationAngle,
-      this.width,
-      this.height,
+      this.size,
       this.component?.label?.position,
     );
 
@@ -174,17 +173,17 @@ export class BaseSvgComponent {
     return 0;
   }
 
-  private getTranslate(angle: number, width: number, height: number): string {
+  private getTranslate(angle: number, size: Size): string {
     if (angle === 90) {
-      return `translate(${height}, 0)`;
+      return `translate(${size.height}, 0)`;
     }
 
     if (angle === 180) {
-      return `translate(${width}, ${height})`;
+      return `translate(${size.width}, ${size.height})`;
     }
 
     if (angle === 270) {
-      return `translate(0, ${width})`;
+      return `translate(0, ${size.width})`;
     }
 
     return undefined;
@@ -205,16 +204,15 @@ export class BaseSvgComponent {
 
   private getLabelCoords(
     angle: number,
-    componentWidth: number,
-    componentHeight: number,
+    size: Size,
     labelPosition: LabelPosition,
   ): { x: number; y: number; direction?: string } {
-    let width = componentWidth;
-    let height = componentHeight;
+    let width = size.width;
+    let height = size.height;
 
     if (angle == 90 || angle == 270) {
-      width = componentHeight;
-      height = componentWidth;
+      width = size.height;
+      height = size.width;
     }
 
     if (labelPosition === LabelPosition.Top) {
