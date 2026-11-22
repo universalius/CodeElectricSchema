@@ -6,7 +6,4 @@ export class ResistorSvgComponent extends BaseSvgComponent {
   constructor(component: ElecComponentDefinition) {
     super(svgString, component);
   }
-
-  // override get points(): Array<Point> {
-  // }
 }

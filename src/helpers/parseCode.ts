@@ -37,7 +37,6 @@ export const parseComponents = (text: string): ElecComponentDefinition[] => {
     .map((line) => line.trim().replace(";", ""));
 
   const components: ElecComponentDefinition[] = [];
-  // console.log("Parsing component lines:", lines);
 
   for (const line of lines) {
     const [idStr, labelStr, orientationStr] = line.split(" ");
