@@ -9,7 +9,7 @@ import type { Point, Size } from "../geometry";
 
 export class IntegratedCircuitSvgComponent extends BaseSvgComponent {
   readonly pinHeight = 20;
-  readonly pinWidth = 20;
+  readonly pinWidth = 40;
   readonly emptyWidth = 20;
   readonly emptyHeight = 20;
   private pinSides: Record<ComponentPosition, Array<Pin>>;
@@ -86,12 +86,15 @@ export class IntegratedCircuitSvgComponent extends BaseSvgComponent {
     //     ? this.emptyHeight
     //     : 0;
 
+    const topPinHeight = t.length ? this.pinWidth : 0;
+    const bottomPinHeight = b.length ? this.pinWidth : 0;
+    const topBottomPinsHeight =
+      topPinHeight + bottomPinHeight + this.emptyHeight;
+    const horPinsHeight = horPinsCount * this.pinHeight;
+    const height =
+      horPinsHeight > topBottomPinsHeight ? horPinsHeight : topBottomPinsHeight;
     return {
-      height: horPinsCount
-        ? horPinsCount * this.pinHeight
-        : (t.length ? this.pinWidth : 0) +
-          this.emptyHeight +
-          (b.length ? this.pinWidth : 0),
+      height,
       width:
         (l.length ? this.pinWidth : 0) +
         (vertPinsCount ? vertPinsCount * this.pinHeight : this.emptyWidth) +
@@ -157,7 +160,7 @@ export class IntegratedCircuitSvgComponent extends BaseSvgComponent {
               x:
                 (this.pinSides.l.length > 0 ? this.pinWidth : 0) +
                 this.pinHeight * index,
-              y: size.height - this.pinWidth,
+              y: this.size.height - this.pinWidth,
             };
             size = vertPinSize;
             break;
