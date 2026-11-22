@@ -10,12 +10,12 @@ export class DotSvgComponent extends BaseSvgComponent {
 
   // A junction dot connects wires from four directions.
   // point 1 = left, point 2 = right, point 3 = top, point 4 = bottom.
-  override get points(): Array<Point> {
-    return [
-      { x: 0, y: this.height / 2 },
-      { x: this.width / 2, y: 0 },
-      { x: this.width, y: this.height / 2 },
-      { x: this.width / 2, y: this.height },
-    ];
+  override get points(): Record<string, Point> {
+    return {
+      "1": { x: 0, y: this.size.height / 2 },
+      "2": { x: this.size.width / 2, y: 0 },
+      "3": { x: this.size.width, y: this.size.height / 2 },
+      "4": { x: this.size.width / 2, y: this.size.height },
+    };
   }
 }

@@ -8,10 +8,10 @@ export class SwitchSvgComponent extends BaseSvgComponent {
     super(svgString, component);
   }
 
-  override get points(): Array<Point> {
-    return [
-      { x: 0, y: this.height - 2 },
-      { x: this.width, y: this.height - 2 },
-    ];
+  override get points(): Record<string, Point> {
+    return {
+      "1": { x: 0, y: this.size.height - 2 },
+      "2": { x: this.size.width, y: this.size.height - 2 },
+    };
   }
 }

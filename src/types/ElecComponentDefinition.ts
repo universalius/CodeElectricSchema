@@ -14,7 +14,7 @@
 // R1-1 -/| length C1-1
 // C1-2 - | - | - R2-1
 
-export enum LabelPosition {
+export enum ComponentPosition {
   Top = "t",
   Left = "l",
   Right = "r",
@@ -23,7 +23,7 @@ export enum LabelPosition {
 
 export type Label = {
   name: string;
-  position?: LabelPosition;
+  position?: ComponentPosition;
 };
 
 export enum Orientation {
@@ -48,13 +48,21 @@ export enum ComponentType {
   MCU = "Microcontroller",
   Pin = "Pin",
   Dot = "Dot",
+  IC = "IntegratedCircuit",
 }
+
+export type Pin = {
+  id: string;
+  label: string;
+  position: ComponentPosition;
+};
 
 export type ElecComponentDefinition = {
   id: string;
   type: ComponentType;
   label?: Label;
   orientation?: Orientation;
+  pins?: Array<Pin>;
 };
 
 export enum ConnectionOrientation {

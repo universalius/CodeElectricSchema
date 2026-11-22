@@ -37,10 +37,10 @@ export const buildScheme = ({
     const toCompDefinition = components.find((c) => c.id === to.componentId);
 
     const fromComponent =
-      svgComponents.find((c) => c.component.id === from.componentId) ||
+      svgComponents.find((c) => c.compDefinition.id === from.componentId) ||
       createSvgContainer(fromCompDefinition, showCompIdInsteadLabel);
     const toComponent =
-      svgComponents.find((c) => c.component.id === to.componentId) ||
+      svgComponents.find((c) => c.compDefinition.id === to.componentId) ||
       createSvgContainer(toCompDefinition, showCompIdInsteadLabel);
 
     if (!fromComponent.currentPosition) {
@@ -48,7 +48,7 @@ export const buildScheme = ({
       fromComponent.currentPosition = { x: 0, y: 0 };
     }
 
-    const fromPoint = fromComponent.points[from.pointId - 1];
+    const fromPoint = fromComponent.points[from.pointId];
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
 
@@ -65,7 +65,7 @@ export const buildScheme = ({
 
     if (!toComponent.currentPosition) {
       svgComponents.push(toComponent);
-      const toPoint = toComponent.points[to.pointId - 1];
+      const toPoint = toComponent.points[to.pointId];
 
       toComponent.currentPosition = moveComponentToPoint(
         toComponent,
@@ -104,7 +104,7 @@ export const buildSchemeSvg = (
 
     const componentGroup = document.createElementNS(SVG_NS, "g");
     for (const svgComponent of svgComponents) {
-      const baseSvg = svgComponent.baseSvg;
+      const baseSvg = svgComponent.svgComponent;
       baseSvg.setAttribute(
         "transform",
         `translate(${svgComponent.currentPosition.x}, ${svgComponent.currentPosition.y})`,

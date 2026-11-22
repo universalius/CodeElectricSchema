@@ -7,7 +7,7 @@ export { PhotodiodeSvgComponent } from "./PhotodiodeSvgComponent";
 export { ResistorSvgComponent } from "./ResistorSvgComponent";
 export { SwitchSvgComponent } from "./SwitchSvgComponent";
 export { TerminalSvgComponent } from "./TerminalSvgComponent";
-// export {} from '';
+export { IntegratedCircuitSvgComponent } from "./IntegratedCircuitSvgComponent";
 // export {} from '';
 // export {} from '';
 // export {} from '';

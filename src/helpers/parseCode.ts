@@ -1,7 +1,7 @@
 import {
   ComponentType,
   ConnectionOrientation,
-  LabelPosition,
+  ComponentPosition,
   Orientation,
   type ElecComponentDefinition,
   type Connection,
@@ -43,11 +43,16 @@ export const parseComponents = (text: string): ElecComponentDefinition[] => {
     const id = idStr;
     const type = parseComponentType(idStr);
 
+    if (parseAndSetPins(idStr, labelStr, type, components)) {
+      continue;
+    }
+
     const component: ElecComponentDefinition = {
       id,
       type,
       label: labelStr ? parseLabel(labelStr) : undefined,
       orientation: orientationStr ? (orientationStr as Orientation) : undefined,
+      pins: [],
     };
 
     components.push(component);
@@ -134,6 +139,8 @@ const parseComponentType = (typeStr: string): ComponentType => {
       return ComponentType.Pin;
     case "Dot":
       return ComponentType.Dot;
+    case "IC":
+      return ComponentType.IC;
     default:
       throw new Error(`Unknown component type: ${typeStr}`);
   }
@@ -143,8 +150,34 @@ const parseLabel = (labelStr: string): Label => {
   const [name, position] = labelStr.trim().split("-");
   return {
     name,
-    position: position ? (position as LabelPosition) : undefined,
+    position: position ? (position as ComponentPosition) : undefined,
   };
+};
+
+const parseAndSetPins = (
+  idStr: string,
+  labelStr: string,
+  type: ComponentType,
+  components: ElecComponentDefinition[],
+): boolean => {
+  if (type === ComponentType.IC) {
+    const idParts = idStr.split("-");
+    if (idParts.length) {
+      const [compId, pinId, position] = idParts;
+      const icComponent = components.find((c) => c.id === compId);
+      if (icComponent) {
+        icComponent.pins.push({
+          id: pinId,
+          label: labelStr,
+          position: position ? (position as ComponentPosition) : undefined,
+        });
+
+        return true;
+      }
+    }
+  }
+
+  return false;
 };
 
 const isConnectionOrientation = (value: string): boolean => {

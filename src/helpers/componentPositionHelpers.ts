@@ -32,9 +32,9 @@ export const getBlockBox = (
   for (const component of svgComponents) {
     const corners: Point[] = [
       { x: 0, y: 0 },
-      { x: component.width, y: 0 },
-      { x: 0, y: component.height },
-      { x: component.width, y: component.height },
+      { x: component.size.width, y: 0 },
+      { x: 0, y: component.size.height },
+      { x: component.size.width, y: component.size.height },
     ];
 
     for (const corner of corners) {
@@ -45,7 +45,7 @@ export const getBlockBox = (
       });
     }
 
-    for (const point of component.points) {
+    for (const point of Object.values(component.points)) {
       includePoint(component.getPointCTM(point));
     }
   }

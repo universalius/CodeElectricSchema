@@ -7,6 +7,7 @@ import {
   LedSvgComponent,
   SwitchSvgComponent,
   DotSvgComponent,
+  IntegratedCircuitSvgComponent,
 } from "../types/components";
 import type { BaseSvgComponent } from "../types/components/BaseSvgComponent";
 import {
@@ -46,6 +47,9 @@ export const createSvgContainer = (
       break;
     case ComponentType.Dot:
       container = new DotSvgComponent(component);
+      break;
+    case ComponentType.IC:
+      container = new IntegratedCircuitSvgComponent(component);
       break;
     default:
       throw new Error(`Unsupported component type: ${component.type}`);
