@@ -1,12 +1,17 @@
 import {
-  ConnectionOrientation,
   type ElecComponentDefinition,
   type Connection,
-  type ConnectionLine,
-  type Point,
   type ConnectionsBlock,
 } from "../types/ElecComponentDefinition";
-import { BaseSvgComponent, SVG_NS } from "../types/BaseSvgContainer";
+import { BaseSvgComponent, SVG_NS } from "../types/components/BaseSvgContainer";
+import type { Box, Point } from "../types/geometry";
+import {
+  getLineEndPoint,
+  moveComponentToPoint,
+  getBlockTranslate,
+  translateBox,
+  getBlockBox,
+} from "./componentPositionHelpers";
 import { createSvgContainer } from "./svgContainerFactory";
 
 export const buildScheme = ({
@@ -21,25 +26,9 @@ export const buildScheme = ({
   svgComponents: Array<BaseSvgComponent>;
   linesCoords: Array<Point[]>;
 } => {
-  //const vccs = components.filter((c) => c.type === ComponentType.Vcc);
-
-  // const rootPossibleComponents = components.filter(({ type }) =>
-  //   [ComponentType.Vcc, ComponentType.Gnd, ComponentType.Terminal].includes(
-  //     type,
-  //   ),
-  // );
-  // const rootComponents = rootPossibleComponents.filter((c) => {
-  //   const { id } = c;
-  //   return connections.every(({ to }) => to.componentId != id);
-  // });
-
-  // const group = document.createElementNS(SVG_NS, "g");
   const svgComponents: Array<BaseSvgComponent> = [];
   const linesCoords: Array<Point[]> = [];
 
-  console.log("components", components);
-
-  // let index = 0;
   for (const connection of connections) {
     const { from, to, lines } = connection;
     const fromCompDefinition = components.find(
@@ -53,11 +42,6 @@ export const buildScheme = ({
     const toComponent =
       svgComponents.find((c) => c.component.id === to.componentId) ||
       createSvgContainer(toCompDefinition, showCompIdInsteadLabel);
-
-    // if (index === 0) {
-    //   svgComponents.push(fromComponent);
-    //   fromComponent.currentPosition = fromComponent.baseSvg.getBBox();
-    // }
 
     if (!fromComponent.currentPosition) {
       svgComponents.push(fromComponent);
@@ -102,8 +86,6 @@ export const buildSchemeSvg = (
   connectionsBlocks: ConnectionsBlock[],
   options: { showCompIdInsteadLabel?: boolean } = {},
 ): SVGSVGElement => {
-  //console.log("buildSchemeSvg", connectionsBlocks);
-
   const svgElement = document.createElementNS(SVG_NS, "svg");
   svgElement.setAttribute("width", "1000");
   svgElement.setAttribute("height", "600");
@@ -147,7 +129,7 @@ export const buildSchemeSvg = (
     blockGroup.appendChild(componentGroup);
     blockGroup.appendChild(linesGroup);
 
-    const blockBox = getBlockBBox(svgComponents, linesCoords);
+    const blockBox = getBlockBox(svgComponents, linesCoords);
     let blockBoxInSvg = blockBox;
 
     const lastGroup = svgElement.lastElementChild;
@@ -169,174 +151,4 @@ export const buildSchemeSvg = (
   }
 
   return svgElement;
-};
-
-type Box = {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-};
-
-const BLOCK_SHIFT_PX = 20;
-const EXTRA_SHIFT_PX = 20;
-
-const EMPTY_BOX: Box = { x: 0, y: 0, width: 0, height: 0 };
-
-const getBlockBBox = (
-  svgComponents: Array<BaseSvgComponent>,
-  linesCoords: Array<Point[]>,
-): Box => {
-  let minX = Number.POSITIVE_INFINITY;
-  let minY = Number.POSITIVE_INFINITY;
-  let maxX = Number.NEGATIVE_INFINITY;
-  let maxY = Number.NEGATIVE_INFINITY;
-
-  const includePoint = (point: Point) => {
-    minX = Math.min(minX, point.x);
-    minY = Math.min(minY, point.y);
-    maxX = Math.max(maxX, point.x);
-    maxY = Math.max(maxY, point.y);
-  };
-
-  for (const component of svgComponents) {
-    const corners: Point[] = [
-      { x: 0, y: 0 },
-      { x: component.width, y: 0 },
-      { x: 0, y: component.height },
-      { x: component.width, y: component.height },
-    ];
-
-    for (const corner of corners) {
-      const oriented = component.transformLocalPoint(corner);
-      includePoint({
-        x: oriented.x + component.currentPosition.x,
-        y: oriented.y + component.currentPosition.y,
-      });
-    }
-
-    for (const point of component.points) {
-      includePoint(component.getPointCTM(point));
-    }
-  }
-
-  for (const [point1, point2] of linesCoords) {
-    includePoint(point1);
-    includePoint(point2);
-  }
-
-  if (minX > maxX || minY > maxY) {
-    return EMPTY_BOX;
-  }
-
-  return {
-    x: minX,
-    y: minY,
-    width: maxX - minX,
-    height: maxY - minY,
-  };
-};
-
-const translateBox = (box: Box, translate: Point): Box => ({
-  x: box.x + translate.x,
-  y: box.y + translate.y,
-  width: box.width,
-  height: box.height,
-});
-
-const getBlockTranslate = (
-  lastBox: Box,
-  currentBox: Box,
-  orientation: ConnectionOrientation,
-): Point => {
-  switch (orientation) {
-    case ConnectionOrientation.Right:
-      return {
-        x:
-          lastBox.x +
-          lastBox.width +
-          BLOCK_SHIFT_PX +
-          EXTRA_SHIFT_PX -
-          currentBox.x,
-        y: 0,
-      };
-    case ConnectionOrientation.Left:
-      return {
-        x:
-          lastBox.x -
-          BLOCK_SHIFT_PX -
-          EXTRA_SHIFT_PX -
-          (currentBox.x + currentBox.width),
-        y: 0,
-      };
-    case ConnectionOrientation.Up:
-      return {
-        x: 0,
-        y:
-          lastBox.y -
-          BLOCK_SHIFT_PX -
-          EXTRA_SHIFT_PX -
-          (currentBox.y + currentBox.height),
-      };
-    case ConnectionOrientation.Down:
-      return {
-        x: 0,
-        y:
-          lastBox.y +
-          lastBox.height +
-          BLOCK_SHIFT_PX +
-          EXTRA_SHIFT_PX -
-          currentBox.y,
-      };
-    default:
-      return { x: 0, y: 0 };
-  }
-};
-
-/**
- * Compute the translate for a component's group so that its terminal
- * `groupPoint` (in local coordinates) lands exactly on `target` (root SVG coords).
- */
-function moveComponentToPoint(
-  component: BaseSvgComponent,
-  groupPoint: Point,
-  target: Point,
-): Point {
-  // terminal position in root coords = position + transformLocalPoint(groupPoint)
-  // so: position = target - transformLocalPoint(groupPoint)
-  const local = component.transformLocalPoint(groupPoint);
-  return { x: target.x - local.x, y: target.y - local.y };
-}
-
-const getLineEndPoint = (point1: Point, line: ConnectionLine): Point => {
-  const defaultLength = 20; // default length if not specified
-  if (line.orientation === ">") {
-    return {
-      x: point1.x + (line.length ?? defaultLength),
-      y: point1.y,
-    };
-  }
-
-  if (line.orientation === "<") {
-    return {
-      x: point1.x - (line.length ?? defaultLength),
-      y: point1.y,
-    };
-  }
-
-  if (line.orientation === "^") {
-    return {
-      x: point1.x,
-      y: point1.y - (line.length ?? defaultLength),
-    };
-  }
-
-  if (line.orientation === "v") {
-    return {
-      x: point1.x,
-      y: point1.y + (line.length ?? defaultLength),
-    };
-  }
-
-  throw new Error(`Unknown line orientation: ${line.orientation}`);
 };

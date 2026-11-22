@@ -1,5 +1,5 @@
-import type { ElecComponentDefinition } from "./ElecComponentDefinition";
-import svgString from "../assets/capacitor.svg?raw";
+import type { ElecComponentDefinition } from "../ElecComponentDefinition";
+import svgString from "../../assets/capacitor.svg?raw";
 import { BaseSvgComponent } from "./BaseSvgContainer";
 
 export class CapacitorSvgContainer extends BaseSvgComponent {

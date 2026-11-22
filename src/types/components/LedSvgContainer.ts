@@ -1,5 +1,8 @@
-import type { ElecComponentDefinition, Point } from "./ElecComponentDefinition";
-import svgString from "../assets/led.svg?raw";
+import type {
+  ElecComponentDefinition,
+  Point,
+} from "../ElecComponentDefinition";
+import svgString from "../../assets/led.svg?raw";
 import { BaseSvgComponent } from "./BaseSvgContainer";
 
 export class LedSvgContainer extends BaseSvgComponent {

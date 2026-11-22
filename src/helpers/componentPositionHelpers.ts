@@ -1,96 +1,169 @@
-import { LabelPosition, Orientation } from "../types/ElecComponentDefinition";
+import type { BaseSvgComponent } from "../types/components";
+import {
+  ConnectionOrientation,
+  type ConnectionLine,
+} from "../types/ElecComponentDefinition";
+import type { Box, Point } from "../types/geometry";
 
-export const getRotation = (orientation: Orientation): number => {
-  if (!orientation || orientation === Orientation.Horizontal) {
-    return 0;
+const BLOCK_SHIFT_PX = 20;
+const EXTRA_SHIFT_PX = 20;
+
+const EMPTY_BOX: Box = { x: 0, y: 0, width: 0, height: 0 };
+
+export const getBlockBox = (
+  svgComponents: Array<BaseSvgComponent>,
+  linesCoords: Array<Point[]>,
+): Box => {
+  let minX = Number.POSITIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+
+  const includePoint = (point: Point) => {
+    minX = Math.min(minX, point.x);
+    minY = Math.min(minY, point.y);
+    maxX = Math.max(maxX, point.x);
+    maxY = Math.max(maxY, point.y);
+  };
+
+  for (const component of svgComponents) {
+    const corners: Point[] = [
+      { x: 0, y: 0 },
+      { x: component.width, y: 0 },
+      { x: 0, y: component.height },
+      { x: component.width, y: component.height },
+    ];
+
+    for (const corner of corners) {
+      const oriented = component.transformLocalPoint(corner);
+      includePoint({
+        x: oriented.x + component.currentPosition.x,
+        y: oriented.y + component.currentPosition.y,
+      });
+    }
+
+    for (const point of component.points) {
+      includePoint(component.getPointCTM(point));
+    }
   }
 
-  if (
-    orientation === Orientation.Vertical ||
-    orientation === Orientation.Rot90
-  ) {
-    return 90;
+  for (const [point1, point2] of linesCoords) {
+    includePoint(point1);
+    includePoint(point2);
   }
 
-  if (orientation === Orientation.Rot180) {
-    return 180;
+  if (minX > maxX || minY > maxY) {
+    return EMPTY_BOX;
   }
 
-  if (orientation === Orientation.Rot270) {
-    return 270;
-  }
-
-  if (orientation === Orientation.Rot360) {
-    return 360;
-  }
-
-  return 0;
+  return {
+    x: minX,
+    y: minY,
+    width: maxX - minX,
+    height: maxY - minY,
+  };
 };
 
-export const getTranslate = (
-  angle: number,
-  width: number,
-  height: number,
-): string => {
-  if (angle === 90) {
-    return `translate(${height}, 0)`;
-  }
+export const translateBox = (box: Box, translate: Point): Box => ({
+  x: box.x + translate.x,
+  y: box.y + translate.y,
+  width: box.width,
+  height: box.height,
+});
 
-  if (angle === 180) {
-    return `translate(${width}, ${height})`;
+export const getBlockTranslate = (
+  lastBox: Box,
+  currentBox: Box,
+  orientation: ConnectionOrientation,
+): Point => {
+  switch (orientation) {
+    case ConnectionOrientation.Right:
+      return {
+        x:
+          lastBox.x +
+          lastBox.width +
+          BLOCK_SHIFT_PX +
+          EXTRA_SHIFT_PX -
+          currentBox.x,
+        y: 0,
+      };
+    case ConnectionOrientation.Left:
+      return {
+        x:
+          lastBox.x -
+          BLOCK_SHIFT_PX -
+          EXTRA_SHIFT_PX -
+          (currentBox.x + currentBox.width),
+        y: 0,
+      };
+    case ConnectionOrientation.Up:
+      return {
+        x: 0,
+        y:
+          lastBox.y -
+          BLOCK_SHIFT_PX -
+          EXTRA_SHIFT_PX -
+          (currentBox.y + currentBox.height),
+      };
+    case ConnectionOrientation.Down:
+      return {
+        x: 0,
+        y:
+          lastBox.y +
+          lastBox.height +
+          BLOCK_SHIFT_PX +
+          EXTRA_SHIFT_PX -
+          currentBox.y,
+      };
+    default:
+      return { x: 0, y: 0 };
   }
-
-  if (angle === 270) {
-    return `translate(0, ${width})`;
-  }
-
-  return undefined;
 };
 
-export const parseSvgString = (svgString: string): SVGSVGElement => {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(svgString, "image/svg+xml");
+/**
+ * Compute the translate for a component's group so that its terminal
+ * `groupPoint` (in local coordinates) lands exactly on `target` (root SVG coords).
+ */
+export function moveComponentToPoint(
+  component: BaseSvgComponent,
+  groupPoint: Point,
+  target: Point,
+): Point {
+  // terminal position in root coords = position + transformLocalPoint(groupPoint)
+  // so: position = target - transformLocalPoint(groupPoint)
+  const local = component.transformLocalPoint(groupPoint);
+  return { x: target.x - local.x, y: target.y - local.y };
+}
 
-  // Check for XML parsing errors
-  const parserError = doc.querySelector("parsererror");
-  if (parserError) {
-    throw new Error(`Failed to parse SVG: ${parserError.textContent}`);
+export const getLineEndPoint = (point1: Point, line: ConnectionLine): Point => {
+  const defaultLength = 20; // default length if not specified
+  if (line.orientation === ">") {
+    return {
+      x: point1.x + (line.length ?? defaultLength),
+      y: point1.y,
+    };
   }
 
-  return doc.documentElement as unknown as SVGSVGElement;
-};
-
-const labelHeight = 36;
-
-export const getLabelCoords = (
-  angle: number,
-  componentWidth: number,
-  componentHeight: number,
-  labelPosition: LabelPosition,
-): { x: number; y: number; direction?: string } => {
-  let width = componentWidth;
-  let height = componentHeight;
-
-  if (angle == 90 || angle == 270) {
-    width = componentHeight;
-    height = componentWidth;
+  if (line.orientation === "<") {
+    return {
+      x: point1.x - (line.length ?? defaultLength),
+      y: point1.y,
+    };
   }
 
-  if (labelPosition === LabelPosition.Top) {
-    return { x: width / 2, y: 0 };
+  if (line.orientation === "^") {
+    return {
+      x: point1.x,
+      y: point1.y - (line.length ?? defaultLength),
+    };
   }
 
-  if (labelPosition === LabelPosition.Bottom) {
-    return { x: width / 2, y: height + labelHeight / 2 };
+  if (line.orientation === "v") {
+    return {
+      x: point1.x,
+      y: point1.y + (line.length ?? defaultLength),
+    };
   }
 
-  if (labelPosition === LabelPosition.Left) {
-    return { x: 0, y: height / 2 + labelHeight / 6, direction: "rtl" };
-  }
-
-  if (labelPosition === LabelPosition.Right) {
-    return { x: width, y: height / 2 + labelHeight / 6 };
-  }
-
-  return { x: width / 2, y: 0 };
+  throw new Error(`Unknown line orientation: ${line.orientation}`);
 };

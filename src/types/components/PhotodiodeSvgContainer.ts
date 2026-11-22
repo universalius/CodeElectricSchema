@@ -1,5 +1,8 @@
-import type { ElecComponentDefinition, Point } from "./ElecComponentDefinition";
-import svgString from "../assets/ik_receiver_diod.svg?raw";
+import type {
+  ElecComponentDefinition,
+  Point,
+} from "../ElecComponentDefinition";
+import svgString from "../../assets/ik_receiver_diod.svg?raw";
 import { BaseSvgComponent } from "./BaseSvgContainer";
 
 export class PhotodiodeSvgContainer extends BaseSvgComponent {

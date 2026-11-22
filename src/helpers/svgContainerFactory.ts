@@ -1,16 +1,18 @@
-import type { BaseSvgComponent } from "../types/BaseSvgContainer";
+import {
+  TerminalSvgContainer,
+  DiodeSvgContainer,
+  PhotodiodeSvgContainer,
+  ResistorSvgContainer,
+  CapacitorSvgContainer,
+  LedSvgContainer,
+  SwitchSvgContainer,
+  DotSvgContainer,
+} from "../types/components";
+import type { BaseSvgComponent } from "../types/components/BaseSvgContainer";
 import {
   type ElecComponentDefinition,
   ComponentType,
 } from "../types/ElecComponentDefinition";
-import { CapacitorSvgContainer } from "../types/CapacitorSvgContainer";
-import { DiodeSvgContainer } from "../types/DiodeSvgContainer";
-import { DotSvgContainer } from "../types/DotSvgContainer";
-import { LedSvgContainer } from "../types/LedSvgContainer";
-import { PhotodiodeSvgContainer } from "../types/PhotodiodeSvgContainer";
-import { ResistorSvgContainer } from "../types/ResistorSvgContainer";
-import { SwitchSvgContainer } from "../types/SwitchSvgContainer";
-import { TerminalSvgContainer } from "../types/TerminalSvgContainer";
 
 export const createSvgContainer = (
   component: ElecComponentDefinition,
