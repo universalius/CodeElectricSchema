@@ -12,9 +12,10 @@ export class PhotodiodeSvgContainer extends BaseSvgComponent {
   // 30x49 viewBox. point 1 = anode (left edge of the triangle), point 2 =
   // cathode (the bar), both at the vertical centre of the body (y = 32.75).
   override get points(): Array<Point> {
+    const y = this.height / 2 + 9;
     return [
-      { x: 1.25, y: 32.75 },
-      { x: 29.25, y: 32.75 },
+      { x: 0, y },
+      { x: this.width, y },
     ];
   }
 }
