@@ -141,6 +141,10 @@ const parseComponentType = (typeStr: string): ComponentType => {
       return ComponentType.Dot;
     case "IC":
       return ComponentType.IC;
+    case "M":
+      return ComponentType.Motor;
+    case "BT":
+      return ComponentType.BT;
     default:
       throw new Error(`Unknown component type: ${typeStr}`);
   }

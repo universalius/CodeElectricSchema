@@ -8,6 +8,8 @@ import {
   SwitchSvgComponent,
   DotSvgComponent,
   IntegratedCircuitSvgComponent,
+  GeneralMotorSvgComponent,
+  BatterySvgComponent,
 } from "../types/components";
 import type { BaseSvgComponent } from "../types/components/BaseSvgComponent";
 import {
@@ -50,6 +52,12 @@ export const createSvgContainer = (
       break;
     case ComponentType.IC:
       container = new IntegratedCircuitSvgComponent(component);
+      break;
+    case ComponentType.Motor:
+      container = new GeneralMotorSvgComponent(component);
+      break;
+    case ComponentType.BT:
+      container = new BatterySvgComponent(component);
       break;
     default:
       throw new Error(`Unsupported component type: ${component.type}`);

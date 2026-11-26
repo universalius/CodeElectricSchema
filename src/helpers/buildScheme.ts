@@ -13,6 +13,7 @@ import {
   getBlockBox,
 } from "./componentPositionHelpers";
 import { createSvgContainer } from "./svgContainerFactory";
+import { createLine } from "./svgElementsHelpers";
 
 export const buildScheme = ({
   components,
@@ -115,14 +116,7 @@ export const buildSchemeSvg = (
 
     const linesGroup = document.createElementNS(SVG_NS, "g");
     for (const [point1, point2] of linesCoords) {
-      const lineElement = document.createElementNS(SVG_NS, "line");
-      lineElement.setAttribute("x1", String(point1.x));
-      lineElement.setAttribute("y1", String(point1.y));
-      lineElement.setAttribute("x2", String(point2.x));
-      lineElement.setAttribute("y2", String(point2.y));
-      lineElement.setAttribute("stroke", "green");
-      lineElement.setAttribute("stroke-width", "2");
-      linesGroup.appendChild(lineElement);
+      linesGroup.appendChild(createLine(point1, point2));
     }
 
     const blockGroup = document.createElementNS(SVG_NS, "g");

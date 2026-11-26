@@ -6,6 +6,11 @@ import {
 
 import { BaseSvgComponent, SVG_NS } from "./BaseSvgComponent";
 import type { Point, Size } from "../geometry";
+import {
+  createText,
+  createRect,
+  createLine,
+} from "../../helpers/svgElementsHelpers";
 
 export class IntegratedCircuitSvgComponent extends BaseSvgComponent {
   readonly pinHeight = 20;
@@ -22,31 +27,48 @@ export class IntegratedCircuitSvgComponent extends BaseSvgComponent {
   }
 
   override get points(): Record<string, Point> {
-    const halfPinHeight = this.pinHeight / 2;
+    // const halfPinHeight = this.pinHeight / 2;
     const points: Record<string, Point> = {};
     this.compDefinition.pins.forEach((p) => {
-      const pinRect = this.svgComponent.querySelector<SVGRectElement>(
-        `[id="${p.id}"]`,
+      const pinLine = this.svgComponent.querySelector<SVGLineElement>(
+        `[id="line-${p.id}"]`,
       );
-      let point;
-      switch (p.position) {
-        case ComponentPosition.Left:
-        case ComponentPosition.Right:
-          point = {
-            x: pinRect.x.baseVal.value,
-            y: pinRect.y.baseVal.value + halfPinHeight,
-          };
-          break;
-        case ComponentPosition.Top:
-        case ComponentPosition.Bottom:
-          point = {
-            x: pinRect.x.baseVal.value + halfPinHeight,
-            y: pinRect.y.baseVal.value,
-          };
-          break;
-      }
 
-      points[p.id] = point;
+      // const pinRect = this.svgComponent.querySelector<SVGRectElement>(
+      //   `[id="line-${p.id}"]`,
+      // );
+      // let point;
+      // switch (p.position) {
+      //   case ComponentPosition.Left:
+      //     point = {
+      //       x: pinRect.x.baseVal.value,
+      //       y: pinRect.y.baseVal.value + halfPinHeight,
+      //     };
+      //     break;
+      //   case ComponentPosition.Right:
+      //     point = {
+      //       x: pinRect.x.baseVal.value + this.pinWidth,
+      //       y: pinRect.y.baseVal.value + halfPinHeight,
+      //     };
+      //     break;
+      //   case ComponentPosition.Top:
+      //     point = {
+      //       x: pinRect.x.baseVal.value + halfPinHeight,
+      //       y: pinRect.y.baseVal.value,
+      //     };
+      //     break;
+      //   case ComponentPosition.Bottom:
+      //     point = {
+      //       x: pinRect.x.baseVal.value + halfPinHeight,
+      //       y: pinRect.y.baseVal.value + this.pinWidth,
+      //     };
+      //     break;
+      // }
+
+      points[p.id] = {
+        x: pinLine.x1.baseVal.value,
+        y: pinLine.y1.baseVal.value,
+      };
     });
 
     return points;
@@ -77,15 +99,6 @@ export class IntegratedCircuitSvgComponent extends BaseSvgComponent {
     const horPinsCount = Math.max(...[(l ?? []).length, (r ?? []).length]);
     const vertPinsCount = Math.max(...[(t ?? []).length, (b ?? []).length]);
 
-    // const emptyWidthSpace =
-    //   (l.length > 0 || r.length > 0) && t.length === 0 && b.length === 0
-    //     ? this.emptyWidth
-    //     : 0;
-    // const emptyHeightSpace =
-    //   (t.length > 0 || b.length > 0) && l.length === 0 && r.length === 0
-    //     ? this.emptyHeight
-    //     : 0;
-
     const topPinHeight = t.length ? this.pinWidth : 0;
     const bottomPinHeight = b.length ? this.pinWidth : 0;
     const topBottomPinsHeight =
@@ -102,117 +115,196 @@ export class IntegratedCircuitSvgComponent extends BaseSvgComponent {
     };
   }
 
-  createRect(point: Point, size: Size, id?: string): SVGRectElement {
-    const rect = document.createElementNS(SVG_NS, "rect");
-    rect.setAttribute("x", String(point.x));
-    rect.setAttribute("y", String(point.y));
-    rect.setAttribute("width", String(size.width));
-    rect.setAttribute("height", String(size.height));
-    rect.setAttribute("height", String(size.height));
-    rect.setAttribute("fill", "none");
-    rect.setAttribute("stroke", "currentColor");
-
-    if (id) {
-      rect.setAttribute("id", id);
-    }
-    return rect;
-  }
-
   override buildSvgComponent(): SVGGElement {
     const group = document.createElementNS(SVG_NS, "g");
-    const rectContainer = this.createRect({ x: 0, y: 0 }, this.size);
+    const rectContainer = createRect({ x: 0, y: 0 }, this.size);
+    group.appendChild(rectContainer);
 
     for (const [key, pins] of Object.entries(this.pinSides)) {
       if (pins.length == 0) continue;
 
       for (let index = 0; index < pins.length; index++) {
         const pin = pins[index];
+        const { point, size } = this.calcPinRectPosition(
+          index,
+          key as ComponentPosition,
+        );
+        // const pinRect = createRect(point, size, pin.id);
+        // group.appendChild(pinRect);
 
-        let point: Point;
-        let size: Size;
+        if (pin.label) {
+          group.appendChild(this.createPinText(point, size, pin));
 
-        const horPinSize = { width: this.pinWidth, height: this.pinHeight };
-        const vertPinSize = { width: this.pinHeight, height: this.pinWidth };
-
-        switch (key) {
-          case ComponentPosition.Left:
-            point = { x: 0, y: this.pinHeight * index };
-            size = horPinSize;
-            break;
-          case ComponentPosition.Right:
-            point = {
-              x: this.size.width - this.pinWidth,
-              y: this.pinHeight * index,
-            };
-            size = horPinSize;
-            break;
-          case ComponentPosition.Top:
-            point = {
-              x:
-                (this.pinSides.l.length > 0 ? this.pinWidth : 0) +
-                this.pinHeight * index,
-              y: 0,
-            };
-            size = vertPinSize;
-            break;
-          case ComponentPosition.Bottom:
-            point = {
-              x:
-                (this.pinSides.l.length > 0 ? this.pinWidth : 0) +
-                this.pinHeight * index,
-              y: this.size.height - this.pinWidth,
-            };
-            size = vertPinSize;
-            break;
+          const pinLine = this.createPinLine(point, size, pin);
+          group.appendChild(pinLine.line);
+          group.appendChild(this.createPinNumber(pinLine.point, pin));
         }
-
-        const pinRect = this.createRect(point, size, pin.id);
-        group.appendChild(pinRect);
       }
     }
 
-    group.appendChild(rectContainer);
+    if (this.compDefinition.label?.name) {
+      group.appendChild(this.getLabelText());
+    }
 
     return group;
+  }
 
-    // const rotate = this.rotationAngle
-    //   ? `rotate(${this.rotationAngle})`
-    //   : undefined;
-    // const translate = this.getTranslate(this.rotationAngle, this.size);
-    // const transform = [translate, rotate].filter(Boolean).join(" ");
-    // const labelCoords = this.getLabelCoords(
-    //   this.rotationAngle,
-    //   this.size,
-    //   this.compDefinition?.label?.position,
-    // );
-    // const group = document.createElementNS(SVG_NS, "g");
-    // const label = this.compDefinition.label;
-    // if (label?.name) {
-    //   const text = document.createElementNS(SVG_NS, "text");
-    //   text.setAttribute("x", String(labelCoords.x));
-    //   text.setAttribute("y", String(labelCoords.y));
-    //   if (
-    //     !label.position ||
-    //     [LabelPosition.Top, LabelPosition.Bottom].includes(label.position)
-    //   ) {
-    //     text.setAttribute("text-anchor", "middle");
-    //   }
-    //   if (labelCoords.direction) {
-    //     text.setAttribute("direction", labelCoords.direction);
-    //   }
-    //   text.textContent = this.showCompIdInsteadLabel
-    //     ? this.compDefinition.id
-    //     : label.name;
-    //   group.appendChild(text);
-    // }
-    // const innerGroup = document.createElementNS(SVG_NS, "g");
-    // if (transform) {
-    //   innerGroup.setAttribute("transform", transform);
-    // }
-    // Array.from(this.svgTemplate.childNodes).forEach((node) =>
-    //   innerGroup.appendChild(node.cloneNode(true)),
-    // );
-    // group.appendChild(innerGroup);
-    // return group;
+  calcPinRectPosition(
+    index: number,
+    key: ComponentPosition,
+  ): { point: Point; size: Size } {
+    let point: Point;
+    let size: Size;
+
+    const horPinSize = { width: this.pinWidth, height: this.pinHeight };
+    const vertPinSize = { width: this.pinHeight, height: this.pinWidth };
+
+    switch (key) {
+      case ComponentPosition.Left:
+        point = { x: 0, y: this.pinHeight * index };
+        size = horPinSize;
+        break;
+      case ComponentPosition.Right:
+        point = {
+          x: this.size.width - this.pinWidth,
+          y: this.pinHeight * index,
+        };
+        size = horPinSize;
+        break;
+      case ComponentPosition.Top:
+        point = {
+          x:
+            (this.pinSides.l.length > 0 ? this.pinWidth : 0) +
+            this.pinHeight * index,
+          y: 0,
+        };
+        size = vertPinSize;
+        break;
+      case ComponentPosition.Bottom:
+        point = {
+          x:
+            (this.pinSides.l.length > 0 ? this.pinWidth : 0) +
+            this.pinHeight * index,
+          y: this.size.height - this.pinWidth,
+        };
+        size = vertPinSize;
+        break;
+    }
+
+    return { point, size };
+  }
+
+  createPinText(point: Point, size: Size, pin: Pin) {
+    const pinTextPoint = {
+      x: point.x + size.width / 2,
+      y: point.y + size.height / 2,
+    };
+    const pinText = createText(pinTextPoint, pin.label, {
+      direction: pin.position === ComponentPosition.Right ? "rtl" : undefined,
+      transform: [ComponentPosition.Top, ComponentPosition.Bottom].includes(
+        pin.position,
+      )
+        ? `rotate(-90, ${pinTextPoint.x}, ${pinTextPoint.y})`
+        : undefined,
+    });
+
+    return pinText;
+  }
+
+  createPinLine(
+    point: Point,
+    size: Size,
+    pin: Pin,
+  ): {
+    line: SVGLineElement;
+    point: Point;
+  } {
+    const lineWidth = 15;
+    let p1: Point;
+    let p2: Point;
+
+    switch (pin.position) {
+      case ComponentPosition.Left:
+      case ComponentPosition.Right:
+        p1 = {
+          x:
+            pin.position === ComponentPosition.Left
+              ? point.x
+              : point.x + size.width,
+          y: point.y + size.height / 2,
+        };
+
+        const width =
+          pin.position === ComponentPosition.Left ? -lineWidth : lineWidth;
+
+        p2 = { x: p1.x + width, y: p1.y };
+        break;
+      case ComponentPosition.Top:
+      case ComponentPosition.Bottom:
+        p1 = {
+          x: point.x + size.width / 2,
+          y:
+            pin.position === ComponentPosition.Top
+              ? point.y
+              : point.y + size.height,
+        };
+
+        const height =
+          pin.position === ComponentPosition.Top ? -lineWidth : lineWidth;
+
+        p2 = {
+          x: p1.x,
+          y: p1.y + height,
+        };
+        break;
+    }
+
+    const line = createLine(p1, p2, pin.id);
+
+    return { line, point: p1 };
+  }
+
+  createPinNumber(point: Point, pin: Pin) {
+    let direction = "rtl";
+    let dominantBaseline = "auto";
+    let textAnchor = "start";
+    let shiftPoint: Point;
+    const shift = 5;
+
+    switch (pin.position) {
+      case ComponentPosition.Left:
+        shiftPoint = {
+          x: -shift,
+          y: -shift,
+        };
+        break;
+      case ComponentPosition.Right:
+        direction = "ltr";
+        shiftPoint = {
+          x: shift,
+          y: -shift,
+        };
+        break;
+      case ComponentPosition.Top:
+        shiftPoint = {
+          x: -shift,
+          y: -shift,
+        };
+        break;
+      case ComponentPosition.Bottom:
+        dominantBaseline = "hanging";
+        shiftPoint = {
+          x: -shift,
+          y: shift,
+        };
+        break;
+    }
+
+    return createText(point, pin.id, {
+      direction,
+      dominantBaseline,
+      textAnchor,
+      transform: `translate(${shiftPoint.x}, ${shiftPoint.y})`,
+    });
   }
 }

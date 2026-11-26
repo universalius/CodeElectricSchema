@@ -1,3 +1,4 @@
+import { createText } from "../../helpers/svgElementsHelpers";
 import {
   ComponentPosition,
   Orientation,
@@ -49,34 +50,10 @@ export class BaseSvgComponent {
 
     const transform = [translate, rotate].filter(Boolean).join(" ");
 
-    const labelCoords = this.getLabelCoords(
-      this.rotationAngle,
-      this.size,
-      this.compDefinition?.label?.position,
-    );
-
     const group = document.createElementNS(SVG_NS, "g");
 
-    const label = this.compDefinition.label;
-    if (label?.name) {
-      const text = document.createElementNS(SVG_NS, "text");
-      text.setAttribute("x", String(labelCoords.x));
-      text.setAttribute("y", String(labelCoords.y));
-      if (
-        !label.position ||
-        [ComponentPosition.Top, ComponentPosition.Bottom].includes(
-          label.position,
-        )
-      ) {
-        text.setAttribute("text-anchor", "middle");
-      }
-      if (labelCoords.direction) {
-        text.setAttribute("direction", labelCoords.direction);
-      }
-      text.textContent = this.showCompIdInsteadLabel
-        ? this.compDefinition.id
-        : label.name;
-      group.appendChild(text);
+    if (this.compDefinition.label?.name) {
+      group.appendChild(this.getLabelText());
     }
 
     const innerGroup = document.createElementNS(SVG_NS, "g");
@@ -196,7 +173,7 @@ export class BaseSvgComponent {
     return doc.documentElement as unknown as SVGSVGElement;
   }
 
-  private getLabelCoords(
+  protected getLabelCoords(
     angle: number,
     size: Size,
     labelPosition: ComponentPosition,
@@ -225,6 +202,38 @@ export class BaseSvgComponent {
       return { x: width, y: height / 2 + this.labelHeight / 6 };
     }
 
+    if (labelPosition === ComponentPosition.Inside) {
+      return { x: width / 2, y: height / 2 };
+    }
+
     return { x: width / 2, y: 0 };
+  }
+
+  protected getLabelText(): SVGTextElement {
+    const labelCoords = this.getLabelCoords(
+      this.rotationAngle,
+      this.size,
+      this.compDefinition?.label?.position,
+    );
+
+    const label = this.compDefinition.label;
+    const text = createText(
+      labelCoords,
+      this.showCompIdInsteadLabel ? this.compDefinition.id : label.name,
+      {
+        direction: labelCoords.direction,
+        dominantBaseline:
+          label.position === ComponentPosition.Inside ? "middle" : "auto",
+        textAnchor:
+          !label.position ||
+          [ComponentPosition.Top, ComponentPosition.Bottom].includes(
+            label.position,
+          )
+            ? "middle"
+            : undefined,
+      },
+    );
+
+    return text;
   }
 }

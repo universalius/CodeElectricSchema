@@ -19,6 +19,7 @@ export enum ComponentPosition {
   Left = "l",
   Right = "r",
   Bottom = "b",
+  Inside = "i",
 }
 
 export type Label = {
@@ -49,6 +50,8 @@ export enum ComponentType {
   Pin = "Pin",
   Dot = "Dot",
   IC = "IntegratedCircuit",
+  Motor = "Motor",
+  BT = "Battery",
 }
 
 export type Pin = {
